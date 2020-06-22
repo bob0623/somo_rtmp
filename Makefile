@@ -16,6 +16,8 @@ FLAG = $(FLAG_DEBUG)
 
 SRC_DIR = ./src
 SRC_RTMP_DIR = ./src/rtmp
+SRC_VIDEO_DIR = ./src/video
+SRC_AUDIO_DIR = ./src/audio
 SRC_COMMON_DIR = ./src/common
 OBJ_DIR = ./build/objs
 BIN_DIR = ../../bin/videoproxy
@@ -25,7 +27,10 @@ all: $(PROCESS)
 
 OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logger.o $(OBJ_DIR)/buffer.o	\
 	$(OBJ_DIR)/session.o $(OBJ_DIR)/protocol.o $(OBJ_DIR)/connection.o $(OBJ_DIR)/rtmpprotocol.o 	\
-	$(OBJ_DIR)/rtmpserver.o $(OBJ_DIR)/rtmpconnection.o $(OBJ_DIR)/rtmpsession.o $(OBJ_DIR)/rtmpformat.o $(OBJ_DIR)/rtmpshakehands.o $(OBJ_DIR)/rtmpamf.o	$(OBJ_DIR)/rtmpbuffer.o
+	$(OBJ_DIR)/videoframepool.o $(OBJ_DIR)/videoframe.o $(OBJ_DIR)/videospsparser.o \
+	$(OBJ_DIR)/audioframepool.o $(OBJ_DIR)/audioframe.o \
+	$(OBJ_DIR)/rtmpserver.o $(OBJ_DIR)/rtmpconnection.o $(OBJ_DIR)/rtmpstream.o $(OBJ_DIR)/rtmpformat.o $(OBJ_DIR)/rtmpshakehands.o $(OBJ_DIR)/rtmpamf.o $(OBJ_DIR)/rtmpbuffer.o	\
+	$(OBJ_DIR)/rtmpparser.o
 
 $(OBJ_DIR)/app.o : $(SRC_DIR)/app.cpp $(SRC_DIR)/app.h
 	$(CC) -c $(FLAG) $(SRC_DIR)/app.cpp -o $(OBJ_DIR)/app.o $(INC)
@@ -54,14 +59,32 @@ $(OBJ_DIR)/connection.o : $(SRC_DIR)/connection.cpp $(SRC_DIR)/connection.h
 $(OBJ_DIR)/rtmpprotocol.o : $(SRC_DIR)/rtmpprotocol.cpp $(SRC_DIR)/rtmpprotocol.h
 	$(CC) -c $(FLAG) $(SRC_DIR)/rtmpprotocol.cpp -o $(OBJ_DIR)/rtmpprotocol.o $(INC)
 
+#video folder
+$(OBJ_DIR)/videoframepool.o : $(SRC_VIDEO_DIR)/videoframepool.cpp $(SRC_VIDEO_DIR)/videoframepool.h
+	$(CC) -c $(FLAG) $(SRC_VIDEO_DIR)/videoframepool.cpp -o $(OBJ_DIR)/videoframepool.o $(INC)
+
+$(OBJ_DIR)/videoframe.o : $(SRC_VIDEO_DIR)/videoframe.cpp $(SRC_VIDEO_DIR)/videoframe.h
+	$(CC) -c $(FLAG) $(SRC_VIDEO_DIR)/videoframe.cpp -o $(OBJ_DIR)/videoframe.o $(INC)
+
+$(OBJ_DIR)/videospsparser.o : $(SRC_VIDEO_DIR)/videospsparser.cpp $(SRC_VIDEO_DIR)/videospsparser.h
+	$(CC) -c $(FLAG) $(SRC_VIDEO_DIR)/videospsparser.cpp -o $(OBJ_DIR)/videospsparser.o $(INC)
+
+#audio folder
+$(OBJ_DIR)/audioframepool.o : $(SRC_AUDIO_DIR)/audioframepool.cpp $(SRC_AUDIO_DIR)/audioframepool.h
+	$(CC) -c $(FLAG) $(SRC_AUDIO_DIR)/audioframepool.cpp -o $(OBJ_DIR)/audioframepool.o $(INC)
+
+$(OBJ_DIR)/audioframe.o : $(SRC_AUDIO_DIR)/audioframe.cpp $(SRC_AUDIO_DIR)/audioframe.h
+	$(CC) -c $(FLAG) $(SRC_AUDIO_DIR)/audioframe.cpp -o $(OBJ_DIR)/audioframe.o $(INC)
+
+#rtmp folder
 $(OBJ_DIR)/rtmpserver.o : $(SRC_RTMP_DIR)/rtmpserver.cpp $(SRC_RTMP_DIR)/rtmpserver.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpserver.cpp -o $(OBJ_DIR)/rtmpserver.o $(INC)
 
 $(OBJ_DIR)/rtmpconnection.o : $(SRC_RTMP_DIR)/rtmpconnection.cpp $(SRC_RTMP_DIR)/rtmpconnection.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpconnection.cpp -o $(OBJ_DIR)/rtmpconnection.o $(INC)
 
-$(OBJ_DIR)/rtmpsession.o : $(SRC_RTMP_DIR)/rtmpsession.cpp $(SRC_RTMP_DIR)/rtmpsession.h
-	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpsession.cpp -o $(OBJ_DIR)/rtmpsession.o $(INC)
+$(OBJ_DIR)/rtmpstream.o : $(SRC_RTMP_DIR)/rtmpstream.cpp $(SRC_RTMP_DIR)/rtmpstream.h
+	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpstream.cpp -o $(OBJ_DIR)/rtmpstream.o $(INC)
 
 $(OBJ_DIR)/rtmpformat.o : $(SRC_RTMP_DIR)/rtmpformat.cpp $(SRC_RTMP_DIR)/rtmpformat.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpformat.cpp -o $(OBJ_DIR)/rtmpformat.o $(INC)
@@ -74,6 +97,9 @@ $(OBJ_DIR)/rtmpamf.o : $(SRC_RTMP_DIR)/rtmpamf.cpp $(SRC_RTMP_DIR)/rtmpamf.h
 
 $(OBJ_DIR)/rtmpbuffer.o : $(SRC_RTMP_DIR)/rtmpbuffer.cpp $(SRC_RTMP_DIR)/rtmpbuffer.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpbuffer.cpp -o $(OBJ_DIR)/rtmpbuffer.o $(INC)
+
+$(OBJ_DIR)/rtmpparser.o : $(SRC_RTMP_DIR)/rtmpparser.cpp $(SRC_RTMP_DIR)/rtmpparser.h
+	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpparser.cpp -o $(OBJ_DIR)/rtmpparser.o $(INC)
 
 $(PROCESS) : $(OBJECT) $(LIB) main.cpp
 	$(CC) $(FLAG) -o $@ main.cpp $(INC) $(OBJECT) $(LIB) $(STDLIB)

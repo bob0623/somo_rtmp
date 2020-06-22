@@ -146,7 +146,8 @@ public:
     /**
      * get payload data, not including headers!
      */
-    int     get_payload(char* data, int len);
+    char*    payload() { return m_pBuf; }
+    int      payload_len() { return m_nLen; }
 
     /**
      * get full data, including headers, this is usually used to send msg on network!
@@ -165,7 +166,7 @@ protected:
     void    dump();
 
 protected:
-    RtmpChunkStream* m_pChunkStream;
+    RtmpChunkStream*m_pChunkStream;
     RtmpMsgHeader   m_header;
     uint32_t        m_nFmt;
     char*           m_pBuf;

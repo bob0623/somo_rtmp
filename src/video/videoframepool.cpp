@@ -1,6 +1,6 @@
 #include "videoframepool.h"
 #include "videoframe.h"
-#include <logger.h>
+#include "common/logger.h"
 
 #include <stdlib.h>
 
@@ -62,7 +62,7 @@ void VideoFramePool::free(VideoFrame* pFrame)
 {
     m_nFreeCount++;
 	pFrame->clear();
-	m_mutex.lock();
+
 	if( pFrame->capacity() == VIDEO_FRAME_SIZE_16K ) {
 		if ( m_arr16KFrames.size() > VIDEO_PACKET_POOL_MAX_16K ) {
 			delete pFrame;
@@ -82,11 +82,9 @@ void VideoFramePool::free(VideoFrame* pFrame)
             delete pFrame;
             pFrame = NULL;
 	}
-	m_mutex.unlock();
 }
 
 void VideoFramePool::reset() {
-	m_mutex.lock();
     for ( frame_pool_t::iterator io = m_arr16KFrames.begin(); io != m_arr16KFrames.end(); ++io ) {
         delete (*io);
         *io = NULL;
@@ -101,5 +99,4 @@ void VideoFramePool::reset() {
 
     m_nGetCount = 0;
     m_nFreeCount = 0;
-    m_mutex.unlock();
 }

@@ -1,5 +1,6 @@
 #include "rtmpformat.h"
 #include "rtmpamf.h"
+
 #include "common/buffer.h"
 #include "common/logger.h"
 
@@ -221,16 +222,6 @@ void    RtmpBasicMsg::add_payload_fmt0(const char* data, int len) {
         IOBuffer buf(m_pBuf, m_nLen);
         m_pPacket->decode(&buf);
     }
-}
-
-int     RtmpBasicMsg::get_payload(char* data, int len) {
-    if( len < m_nLen ) {
-        FUNLOG(Error, "rtmp basic msg get payload, len<m_nLen, len=%d, m_nLen=%d", len, m_nLen);
-        return 0;
-    }
-
-    memcpy(data, m_pBuf, m_nLen);
-    return m_nLen;
 }
 
 int     RtmpBasicMsg::get_full_data(int fmt, int cid, char* data, int len) {

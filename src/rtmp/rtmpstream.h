@@ -12,10 +12,11 @@ class RtmpBasicMsg;
 class RtmpCommandPacket;
 class RtmpAudioPacket;
 class RtmpVideoPacket;
-class RtmpSession {
+class RtmpParser;
+class RtmpStream {
 public:
-    RtmpSession(RtmpConnection* conn);
-    ~RtmpSession();
+    RtmpStream(RtmpConnection* conn);
+    ~RtmpStream();
 
 public:
     void    on_msg(RtmpBasicMsg* msg);
@@ -41,6 +42,8 @@ private:
 
 private:
     RtmpConnection* m_pConnection;
+    RtmpParser*     m_pParser;
+
     int             m_nType;
     std::string     m_strApp;
     std::string     m_strTcUrl;

@@ -1,6 +1,6 @@
 #include "rtmpconnection.h"
 #include "rtmpshakehands.h"
-#include "rtmpsession.h"
+#include "rtmpstream.h"
 #include "rtmpformat.h"
 #include "rtmpbuffer.h"
 #include "common/buffer.h"
@@ -15,13 +15,13 @@ RtmpConnection::RtmpConnection(ISNLink* link)
 {
     m_nConnectStamp = Util::system_time_msec();
     m_pShakeHands = new RtmpShakeHands(this);
-    m_pSession = new RtmpSession(this);
+    m_pStream = new RtmpStream(this);
     m_pBuffer = new RtmpBuffer();
 }
 
 RtmpConnection::~RtmpConnection() {
     delete m_pShakeHands;
-    delete m_pSession;
+    delete m_pStream;
     delete m_pBuffer;
 }
 
@@ -82,7 +82,7 @@ void     RtmpConnection::handle_msg(RtmpMsgBuffer* msg_buf) {
     //FUNLOG(Info, "rtmp connection handle chunk, create msg! fmt==0, type=%d, len=%d", msg_type, msg_len);
     chunk_stream->create_msg(msg_buf->fmt(),  msg_buf->msg_type(),  msg_buf->msg_len(), 0, 0);
     chunk_stream->add_payload(msg_buf->data(), msg_buf->msg_len());
-    m_pSession->on_msg(chunk_stream->msg());
+    m_pStream->on_msg(chunk_stream->msg());
     chunk_stream->release_msg();
 }
 

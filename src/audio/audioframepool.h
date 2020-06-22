@@ -1,14 +1,14 @@
 #pragma once
 
-#include "singleton.h"
+#include "common/singleton.h"
 #include <deque>
 
 class AudioFrame;
-class RtmpAudioFramePool : public Singleton<RtmpAudioFramePool>
+class AudioFramePool : public Singleton<AudioFramePool>
 {   
 public:
-    RtmpAudioFramePool();
-    ~RtmpAudioFramePool();
+    AudioFramePool();
+    ~AudioFramePool();
 
 public:
     AudioFrame*	get(int size);

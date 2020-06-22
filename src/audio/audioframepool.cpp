@@ -1,7 +1,7 @@
 #include "audioframepool.h"
 #include "audioframe.h"
 
-#include <logger.h>
+#include "common/logger.h"
 #include <stdlib.h>
 
 #define __CLASS__ "AudioFramePool"
@@ -43,26 +43,22 @@ AudioFrame* AudioFramePool::get(int size)
 }
 
 
-void AudioFramePool::free(RtmpAudioFrame* pFrame)
+void AudioFramePool::free(AudioFrame* pFrame)
 {
     m_nFreeCount++;
 	pFrame->clear();
 
-	m_mutex.lock();	
 	if ( m_arrFrames.size() > AUDIO_PACKET_POOL_MAX ) {
 		delete pFrame;
 		pFrame = NULL;
 	} else {
 		m_arrFrames.push_back(pFrame);
 	}
-	m_mutex.unlock();
 }
 
 void AudioFramePool::reset() {
-	m_mutex.lock();
     for ( frame_pool_t::iterator io = m_arrFrames.begin(); io != m_arrFrames.end(); ++io ) {
         delete (*io);
     }
     m_arrFrames.clear();
-    m_mutex.unlock();
 }

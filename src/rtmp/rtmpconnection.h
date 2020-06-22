@@ -4,7 +4,7 @@
 #include "isnet.h"
 #include <map>
 
-class RtmpSession;
+class RtmpStream;
 class RtmpBuffer;
 class RtmpMsgBuffer;
 class RtmpShakeHands;
@@ -20,7 +20,7 @@ public:
     virtual int    on_data(const char* data, int len);
 
 public:
-    RtmpSession*    session() { return m_pSession; }
+    RtmpStream*    session() { return m_pStream; }
     RtmpBuffer*     buffer() { return m_pBuffer; }
 
 private:
@@ -33,7 +33,7 @@ private:
     uint64_t    m_nConnectStamp;
     bool        m_bShakeHands;
     std::map<int, RtmpChunkStream*>    m_mapStreams;
-    RtmpSession*m_pSession;
+    RtmpStream*m_pStream;
     RtmpBuffer* m_pBuffer;
 };
 
