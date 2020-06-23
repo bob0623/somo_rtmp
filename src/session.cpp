@@ -5,8 +5,8 @@
 
 #define     __CLASS__   "Session"
 
-Session::Session(uint32_t sid) 
-: m_nSid(sid)
+Session::Session(const std::string& stream) 
+: m_strStream(stream)
 {
 
 }
@@ -16,8 +16,7 @@ Session::~Session() {
 }
 
 void    Session::set_publisher(Publisher* publisher) {
-    
-
+    m_pPublisher = publisher;
 }
 
 void    Session::add_consumer(Consumer* consumer) {

@@ -2,10 +2,10 @@
 
 #include <string>
 
-#define PROTOCOL_SOMO_UDP       1
-#define PROTOCOL_RTMP           2
+#include "app.h"
 
 class Server;
+class Session;
 class Connection;
 struct ISNLink;
 class Protocol {
@@ -15,6 +15,7 @@ public:
 
 public:
     virtual Server*     create_server() = 0;
+    virtual Session*    create_session(const std::string& stream) = 0;
     virtual Connection* create_connection(ISNLink* link) = 0;
 
 public:

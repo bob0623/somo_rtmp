@@ -27,7 +27,7 @@ void    RtmpChunkStream::create_msg(uint32_t fmt, uint32_t type, uint32_t len, u
         delete m_pMsg;
     }
 
-    m_pMsg = new RtmpBasicMsg(this, type, len, stamp, id);
+    m_pMsg = new RtmpMessage(this, type, len, stamp, id);
     m_pMsg->set_fmt(fmt);
     m_nLastType = m_pMsg->type();
     m_nLastLen = m_pMsg->msg_len();
@@ -111,7 +111,7 @@ bool rtmp_is_av_msg(int type) {
     return false;
 }
 
-RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream) 
+RtmpMessage::RtmpMessage(RtmpChunkStream* chunk_stream) 
 : m_pChunkStream(chunk_stream)
 {
     m_header.type = 0;
@@ -125,7 +125,7 @@ RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream)
     m_pPacket = NULL;
 }
 
-RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type)
+RtmpMessage::RtmpMessage(RtmpChunkStream* chunk_stream, uint32_t type)
 : m_pChunkStream(chunk_stream)
 {
     m_header.type = type;
@@ -139,7 +139,7 @@ RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type)
     m_pPacket = RtmpPacketFactory::create_packet(type);
 }
 
-RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len) 
+RtmpMessage::RtmpMessage(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len) 
 : m_pChunkStream(chunk_stream)
 {
     m_header.type = type;
@@ -150,7 +150,7 @@ RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type, uint32_
     m_pPacket = RtmpPacketFactory::create_packet(type);
 }
 
-RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len, uint32_t stamp, uint32_t id) 
+RtmpMessage::RtmpMessage(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len, uint32_t stamp, uint32_t id) 
 : m_pChunkStream(chunk_stream)
 {
     //FUNLOG(Info, "rtmp basic msg new, type=%d, len=%d", type, len);
@@ -167,34 +167,34 @@ RtmpBasicMsg::RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type, uint32_
     m_pPacket = RtmpPacketFactory::create_packet(type);
 }
 
-RtmpBasicMsg::~RtmpBasicMsg() {
+RtmpMessage::~RtmpMessage() {
     delete m_pBuf;
     if( m_pPacket ) {
         delete m_pPacket;
     }
 }
 
-void    RtmpBasicMsg::set_fmt(uint32_t fmt) {
+void    RtmpMessage::set_fmt(uint32_t fmt) {
     m_nFmt = fmt;
 }
 
-void    RtmpBasicMsg::set_type(uint32_t type) {
+void    RtmpMessage::set_type(uint32_t type) {
     m_header.type = type;
 }
 
-void    RtmpBasicMsg::set_msg_len(uint32_t len) {
+void    RtmpMessage::set_msg_len(uint32_t len) {
     m_header.len = len;
 }
 
-void    RtmpBasicMsg::set_stamp(uint32_t stamp) {
+void    RtmpMessage::set_stamp(uint32_t stamp) {
     m_header.stamp = stamp;
 }
 
-void    RtmpBasicMsg::set_stream_id(uint32_t stream_id) {
+void    RtmpMessage::set_stream_id(uint32_t stream_id) {
     m_header.id = stream_id;
 }
 
-void    RtmpBasicMsg::add_payload(const char* data, int len) {
+void    RtmpMessage::add_payload(const char* data, int len) {
     if( m_nLen + len > m_header.len ) {
         //wrong msg length:
         FUNLOG(Error, "rtmp basic msg add payload, msg size invalid! m_header.len=%d, m_nLen=%d, len=%d", m_header.len, m_nLen, len);
@@ -211,7 +211,7 @@ void    RtmpBasicMsg::add_payload(const char* data, int len) {
     }
 }
 
-void    RtmpBasicMsg::add_payload_fmt0(const char* data, int len) {
+void    RtmpMessage::add_payload_fmt0(const char* data, int len) {
 
 
     memcpy(m_pBuf+m_nLen, data, len);
@@ -224,7 +224,7 @@ void    RtmpBasicMsg::add_payload_fmt0(const char* data, int len) {
     }
 }
 
-int     RtmpBasicMsg::get_full_data(int fmt, int cid, char* data, int len) {
+int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
     int total_len = 0;
     int header_len_pos = 0;
     IOBuffer buf(data, len);
@@ -323,7 +323,7 @@ int     RtmpBasicMsg::get_full_data(int fmt, int cid, char* data, int len) {
     return total_len;
 }
 
-void    RtmpBasicMsg::dump() {
+void    RtmpMessage::dump() {
     FUNLOG(Info, "rtmp basic msg dump, b0-b1-b2-b3-b4-b5-b6-b7-b8=%x %x %x %x %x %x %x %x", m_pBuf[0], m_pBuf[1], m_pBuf[2], m_pBuf[3], m_pBuf[4], m_pBuf[5], m_pBuf[6], m_pBuf[7]);
 }
 

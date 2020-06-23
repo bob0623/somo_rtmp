@@ -22,8 +22,8 @@ public:
 
 class Session {
 public:
-    Session(uint32_t sid);
-    ~Session();
+    Session(const std::string& stream);
+    virtual ~Session();
 
 public:
     void    set_publisher(Publisher* publisher);
@@ -31,11 +31,13 @@ public:
     void    remove_consumer(uint32_t linkid);
 
 public:
-    uint64_t    sid() { return m_nSid; }
+    void    on_audio();
+    void    on_video();
+
+public:
+    std::string    stream() { return m_strStream; }
 
 private:
-    uint32_t    m_nSid;
-    std::string m_strApp;
     std::string m_strStream;
     Publisher*  m_pPublisher;
     std::map<uint32_t, Consumer*>   m_mapConsumers;

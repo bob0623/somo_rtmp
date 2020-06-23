@@ -15,3 +15,4 @@ void    RtmpPublisher::on_audio(AudioFrame* frame) {
 void    RtmpPublisher::on_video(VideoFrame* frame) {
 
 }
+

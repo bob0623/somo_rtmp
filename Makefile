@@ -29,7 +29,7 @@ OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logge
 	$(OBJ_DIR)/session.o $(OBJ_DIR)/protocol.o $(OBJ_DIR)/connection.o $(OBJ_DIR)/rtmpprotocol.o 	\
 	$(OBJ_DIR)/videoframepool.o $(OBJ_DIR)/videoframe.o $(OBJ_DIR)/videospsparser.o \
 	$(OBJ_DIR)/audioframepool.o $(OBJ_DIR)/audioframe.o \
-	$(OBJ_DIR)/rtmpserver.o $(OBJ_DIR)/rtmpconnection.o $(OBJ_DIR)/rtmpstream.o $(OBJ_DIR)/rtmpformat.o $(OBJ_DIR)/rtmpshakehands.o $(OBJ_DIR)/rtmpamf.o $(OBJ_DIR)/rtmpbuffer.o	\
+	$(OBJ_DIR)/rtmpserver.o $(OBJ_DIR)/rtmpconnection.o $(OBJ_DIR)/rtmpsession.o $(OBJ_DIR)/rtmpstream.o $(OBJ_DIR)/rtmppublisher.o $(OBJ_DIR)/rtmpconsumer.o $(OBJ_DIR)/rtmpformat.o $(OBJ_DIR)/rtmpshakehands.o $(OBJ_DIR)/rtmpamf.o $(OBJ_DIR)/rtmpbuffer.o	\
 	$(OBJ_DIR)/rtmpparser.o
 
 $(OBJ_DIR)/app.o : $(SRC_DIR)/app.cpp $(SRC_DIR)/app.h
@@ -83,8 +83,17 @@ $(OBJ_DIR)/rtmpserver.o : $(SRC_RTMP_DIR)/rtmpserver.cpp $(SRC_RTMP_DIR)/rtmpser
 $(OBJ_DIR)/rtmpconnection.o : $(SRC_RTMP_DIR)/rtmpconnection.cpp $(SRC_RTMP_DIR)/rtmpconnection.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpconnection.cpp -o $(OBJ_DIR)/rtmpconnection.o $(INC)
 
+$(OBJ_DIR)/rtmpsession.o : $(SRC_RTMP_DIR)/rtmpsession.cpp $(SRC_RTMP_DIR)/rtmpsession.h
+	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpsession.cpp -o $(OBJ_DIR)/rtmpsession.o $(INC)
+
 $(OBJ_DIR)/rtmpstream.o : $(SRC_RTMP_DIR)/rtmpstream.cpp $(SRC_RTMP_DIR)/rtmpstream.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpstream.cpp -o $(OBJ_DIR)/rtmpstream.o $(INC)
+
+$(OBJ_DIR)/rtmppublisher.o : $(SRC_RTMP_DIR)/rtmppublisher.cpp $(SRC_RTMP_DIR)/rtmppublisher.h
+	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmppublisher.cpp -o $(OBJ_DIR)/rtmppublisher.o $(INC)
+
+$(OBJ_DIR)/rtmpconsumer.o : $(SRC_RTMP_DIR)/rtmpconsumer.cpp $(SRC_RTMP_DIR)/rtmpconsumer.h
+	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpconsumer.cpp -o $(OBJ_DIR)/rtmpconsumer.o $(INC)
 
 $(OBJ_DIR)/rtmpformat.o : $(SRC_RTMP_DIR)/rtmpformat.cpp $(SRC_RTMP_DIR)/rtmpformat.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpformat.cpp -o $(OBJ_DIR)/rtmpformat.o $(INC)

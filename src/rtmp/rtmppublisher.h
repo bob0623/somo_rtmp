@@ -2,6 +2,7 @@
 
 #include "session.h"
 
+class RtmpStream;
 class RtmpPublisher : public Publisher {
 public:
     RtmpPublisher();

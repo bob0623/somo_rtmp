@@ -8,7 +8,9 @@
 
 class RtmpChunkStream;
 class RtmpConnection;
-class RtmpBasicMsg;
+class RtmpPublisher;
+class RtmpConsumer;
+class RtmpMessage;
 class RtmpCommandPacket;
 class RtmpAudioPacket;
 class RtmpVideoPacket;
@@ -19,15 +21,15 @@ public:
     ~RtmpStream();
 
 public:
-    void    on_msg(RtmpBasicMsg* msg);
-
-public:
+    void    on_msg(RtmpMessage* msg);
     uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
+    RtmpPublisher*  publisher() { return m_pPublisher; }
+    RtmpConsumer*   consumer() { return m_pConsumer; }
 
 private:
-    void    on_command(RtmpBasicMsg* msg);
-    void    on_audio(RtmpBasicMsg* msg);
-    void    on_video(RtmpBasicMsg* msg);
+    void    on_command(RtmpMessage* msg);
+    void    on_audio(RtmpMessage* msg);
+    void    on_video(RtmpMessage* msg);
 
 private:
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
@@ -42,6 +44,8 @@ private:
 
 private:
     RtmpConnection* m_pConnection;
+    RtmpPublisher*  m_pPublisher;
+    RtmpConsumer*   m_pConsumer;
     RtmpParser*     m_pParser;
 
     int             m_nType;

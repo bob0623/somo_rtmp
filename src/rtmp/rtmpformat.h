@@ -81,7 +81,7 @@ struct RtmpPublishParams {
 };
 
 class IOBuffer;
-class RtmpBasicMsg;
+class RtmpMessage;
 class RtmpCommandMsg;
 class RtmpPacket;
 class RtmpChunkStream {
@@ -92,17 +92,17 @@ public:
 public:
     void    create_msg(uint32_t fmt, uint32_t type, uint32_t len, uint32_t stamp, uint32_t id);
     void    release_msg();
-    RtmpBasicMsg*   get_msg() { return m_pMsg; }
+    RtmpMessage*   get_msg() { return m_pMsg; }
     void    add_payload(const char* data, int len);
     void    add_payload_fmt0(const char* data, int len);
     int     cid() { return m_nCid; }
     int     last_type() { return m_nLastType; }
     int     last_len() { return m_nLastLen; }
-    RtmpBasicMsg*   msg() { return m_pMsg; }
+    RtmpMessage*   msg() { return m_pMsg; }
 
 private:
     RtmpChunkHeader*m_pChunkHeader;
-    RtmpBasicMsg*   m_pMsg;
+    RtmpMessage*   m_pMsg;
     int     m_nCid;
     int     m_nLastType;
     int     m_nLastLen;
@@ -116,13 +116,13 @@ public:
 bool rtmp_is_valid_msg_type(int type);
 bool rtmp_is_av_msg(int type);
 
-class RtmpBasicMsg {
+class RtmpMessage {
 public:
-    RtmpBasicMsg(RtmpChunkStream* chunk_stream);
-    RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type);
-    RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len);
-    RtmpBasicMsg(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len, uint32_t stamp, uint32_t id);
-    ~RtmpBasicMsg();
+    RtmpMessage(RtmpChunkStream* chunk_stream);
+    RtmpMessage(RtmpChunkStream* chunk_stream, uint32_t type);
+    RtmpMessage(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len);
+    RtmpMessage(RtmpChunkStream* chunk_stream, uint32_t type, uint32_t len, uint32_t stamp, uint32_t id);
+    ~RtmpMessage();
 
 public:
     void    set_fmt(uint32_t fmt);

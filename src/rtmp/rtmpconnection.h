@@ -9,7 +9,7 @@ class RtmpBuffer;
 class RtmpMsgBuffer;
 class RtmpShakeHands;
 class RtmpChunkStream;
-class RtmpBasicMsg;
+class RtmpMessage;
 class RtmpChunkMsg;
 class RtmpConnection : public Connection {
 public:
@@ -20,7 +20,7 @@ public:
     virtual int    on_data(const char* data, int len);
 
 public:
-    RtmpStream*    session() { return m_pStream; }
+    RtmpStream*    stream() { return m_pStream; }
     RtmpBuffer*     buffer() { return m_pBuffer; }
 
 private:

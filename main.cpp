@@ -7,7 +7,7 @@ int main()
 {
     SNStartup();
 
-    App::Ins()->add_server( 1935, new RtmpProtocol() );
+    App::Ins()->add_server( 1935, PROTOCOL_RTMP );
 
     SNLoop();
 
