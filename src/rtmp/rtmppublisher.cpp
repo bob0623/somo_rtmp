@@ -1,4 +1,6 @@
 #include "rtmppublisher.h"
+#include "rtmpstream.h"
+#include "rtmpsession.h"
 
 RtmpPublisher::RtmpPublisher(RtmpStream* stream)
 : m_pStream(stream) 

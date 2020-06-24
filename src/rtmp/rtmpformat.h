@@ -374,7 +374,8 @@ public:
     virtual int     encode(IOBuffer* buf);
 
 private:
-
+    char*   m_pBuf;
+    int     m_nLen;
 };
 
 

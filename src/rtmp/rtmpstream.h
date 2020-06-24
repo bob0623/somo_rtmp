@@ -6,6 +6,7 @@
 #define RTMP_SESSION_TYPE_PUBLISH   1
 #define RTMP_SESSION_TYPE_PLAY      2
 
+class RtmpSession;
 class RtmpChunkStream;
 class RtmpConnection;
 class RtmpPublisher;
@@ -22,8 +23,11 @@ public:
 
 public:
     void    on_msg(RtmpMessage* msg);
+    void    send_msg(RtmpMessage* msg);
     bool    is_publisher();
     bool    is_consumer();
+    RtmpSession*    session() { return m_pSession; }
+    RtmpConnection* connection() { return m_pConnection; }
     RtmpPublisher*  publisher() { return m_pPublisher; }
     RtmpConsumer*   consumer() { return m_pConsumer; }
     uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
@@ -49,6 +53,7 @@ private:
     void    ack_ping(RtmpChunkStream* chunk_stream, uint32_t data);
 
 private:
+    RtmpSession*    m_pSession;
     RtmpConnection* m_pConnection;
     RtmpPublisher*  m_pPublisher;
     RtmpConsumer*   m_pConsumer;
@@ -59,6 +64,7 @@ private:
     std::string     m_strTcUrl;
     std::string     m_strStream;
     uint32_t        m_nChunkSizeIn;
+    uint32_t        m_nChunkSizeOut;
 
     //for send buf
     char*           m_pSendBuf;

@@ -48,3 +48,15 @@ Consumer*   Session::get_consumer(uint32_t id) {
 
     return it->second;
 }
+
+void    Session::on_video(VideoFrame* frame) {
+    for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
+        it->second->on_video(frame);
+    }
+}
+
+void    Session::on_video_rtmp(const char* data, int len) {
+    for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
+        it->second->on_video_rtmp(data, len);
+    }
+}

@@ -66,8 +66,10 @@ void    RtmpParser::parse_video(uint8_t* buf, size_t size, VideoFrame* frame) {
     header.avc_packet_type = *(p+readed);
     readed += 1;
     
+    //3.2.1 Video Tag header:
+    //AVCPacketType: 0-AVC Sequence Header, 1-AVC Nalu, 2-AVC end of sequence.
     if( header.avc_packet_type == 0 ) {
-        FUNLOG(Warn, "rtmp parse video tag, avc_packet_type == 0", NULL);
+        FUNLOG(Warn, "rtmp parse video tag, avc_packet_type == 0, len=%d", size-readed);
     } else if( header.avc_packet_type == 1 ) {
         header.composition_time = *(p+readed);
     }
@@ -89,7 +91,7 @@ void    RtmpParser::parse_video_avc_seq_header(uint8_t* buf, size_t size) {
 }
     
 void    RtmpParser::parse_video_avc_packet(uint8_t* buf, size_t size, VideoFrame* frame) {
-    FUNLOG(Info, "rtmp parse video tag, header.avc_packet_type = %d, size=%d", header.avc_packet_type, size);
+    //FUNLOG(Info, "rtmp parse video tag, header.avc_packet_type = %d, size=%d", header.avc_packet_type, size);
     if( header.avc_packet_type == 0 ) {
         //AVCDecoderConfigurationRecord
         parse_video_decoder_config(buf, size, frame);
@@ -167,7 +169,7 @@ void    RtmpParser::parse_video_nalu(uint8_t* buf, size_t size, VideoFrame* fram
         b1 = temp[4] & 31; //31=0x00011111
         temp += 4;
         //FUNLOG(Info, "video nalu, frameType=%d, m_iSpsPpsLen=%d", b1, m_iSpsPpsLen);
-        if (b1 == 5 && m_iSpsPpsLen > 0) { //insert sps&pps before the first IDR frame.
+        if(b1 == 5 && m_iSpsPpsLen > 0) { //insert sps&pps before the first IDR frame.
             frame->append(m_pSpsPpsBuffer, m_iSpsPpsLen);
         }
 
@@ -183,7 +185,7 @@ void    RtmpParser::parse_video_nalu(uint8_t* buf, size_t size, VideoFrame* fram
                 break;
             case 5:
                 m_iIDRFrameCount++;
-//                FUNLOGI("video nalu, I frame, len={%d}", len);
+                FUNLOG(Info, "rtmp parse video nalu, found I frame, len={%d}, b1=%d", len, b1);
                 break;
             case 6:
                 break;

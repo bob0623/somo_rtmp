@@ -22,8 +22,10 @@
 #define __CLASS__   "RtmpSession"
 
 RtmpStream::RtmpStream(RtmpConnection* conn) 
-: m_nChunkSizeIn(0)
+: m_pSession(NULL)
 , m_pConnection(conn)
+, m_nChunkSizeIn(128)
+, m_nChunkSizeOut(128*1024)
 , m_pPublisher(NULL)
 , m_pConsumer(NULL)
 , m_nType(RTMP_SESSION_TYPE_UNKNOWN)
@@ -70,6 +72,12 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
     }
 }
 
+void    RtmpStream::send_msg(RtmpMessage* msg) {
+    int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
+    FUNLOG(Info, "rtmp session ack window size, total_len=%d", total_len);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
 bool    RtmpStream::is_publisher() {
     return m_nType == RTMP_SESSION_TYPE_PUBLISH;
 }  
@@ -88,7 +96,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         FUNLOG(Info, "rtmp session command connect, app=%s, tcUrl=%s", m_strApp.c_str(), m_strTcUrl.c_str());
         ack_window_ack_size(msg->chunk_stream(), 2500000);
         ack_set_peer_bandwidth(msg->chunk_stream(), 2500000);
-        ack_chunk_size(msg->chunk_stream(), 60000);
+        ack_chunk_size(msg->chunk_stream(), m_nChunkSizeOut);
         ack_connect(msg->chunk_stream());
     } else if( packet->name() == "releaseStream" ) {
         m_strStream = packet->release_stream_packet()->stream;
@@ -122,8 +130,8 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         //1, verify the stream doesn't exist!
         //2, if stream exist, report fail!
         //3, if stream not exist, create it with App.
-        Session* session = App::Ins()->add_session( packet->publish_packet()->stream, PROTOCOL_RTMP); 
-        session->set_publisher(m_pPublisher);
+        m_pSession = (RtmpSession*)App::Ins()->add_session( packet->publish_packet()->stream, PROTOCOL_RTMP); 
+        m_pSession->set_publisher(m_pPublisher);
 
     } else if( packet->name() == "play" ) {
         uint32_t tid = packet->play_packet()->tid;
@@ -138,12 +146,12 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         //1, verify the stream doesn't exist!
         //2, if stream exist, report fail!
         //3, if stream not exist, create it with App.
-        Session* session = App::Ins()->get_session(packet->play_packet()->stream);
-        if( session == NULL ) {
+        m_pSession = (RtmpSession*)App::Ins()->get_session(packet->play_packet()->stream);
+        if( m_pSession == NULL ) {
             FUNLOG(Error, "rtmp session command play, session not exist for stream=%s", packet->play_packet()->stream.c_str());
             return;
         } else {
-            session->add_consumer(m_pConsumer);
+            m_pSession->add_consumer(m_pConsumer);
         }
     }
 }
@@ -165,12 +173,17 @@ void    RtmpStream::on_video(RtmpMessage* msg) {
     m_nVideoFrames++;
 
     if( m_nVideoFrames%30 == 0 || m_nVideoFrames <= 5) {
-        FUNLOG(Info, "rtmp session on video frame, frames=%d, size=%d", m_nVideoFrames, msg->msg_len());
+        FUNLOG(Info, "rtmp session on video frame, frames=%d, size=%d,", m_nVideoFrames, msg->msg_len());
     }
-
-    //VideoFrame* frame = VideoFramePool::Ins()->get( msg->payload_len() );
-    //m_pParser->parse_video((uint8_t*)msg->payload(), (size_t)msg->payload_len(), frame );
-    //VideoFramePool::Ins()->free(frame);
+    
+    int total_len = msg->get_full_data(1, msg->chunk_stream()->cid(), m_pSendBuf, m_nSendBufCapacity);
+    m_pSession->on_video_rtmp(m_pSendBuf, total_len);
+    /*
+    VideoFrame* frame = VideoFramePool::Ins()->get( msg->payload_len() );
+    m_pParser->parse_video((uint8_t*)msg->payload(), (size_t)msg->payload_len(), frame );
+    m_pSession->on_video(frame);
+    VideoFramePool::Ins()->free(frame);
+    */
 }
 
 void    RtmpStream::ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size) {

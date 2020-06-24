@@ -80,7 +80,7 @@ void     RtmpConnection::handle_msg(RtmpMsgBuffer* msg_buf) {
     }
 
     //FUNLOG(Info, "rtmp connection handle chunk, create msg! fmt==0, type=%d, len=%d", msg_type, msg_len);
-    chunk_stream->create_msg(msg_buf->fmt(),  msg_buf->msg_type(),  msg_buf->msg_len(), 0, 0);
+    chunk_stream->create_msg(msg_buf->fmt(),  msg_buf->msg_type(),  msg_buf->msg_len(), msg_buf->stamp(), 0);
     chunk_stream->add_payload(msg_buf->data(), msg_buf->msg_len());
     m_pStream->on_msg(chunk_stream->msg());
     chunk_stream->release_msg();

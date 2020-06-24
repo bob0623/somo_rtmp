@@ -48,7 +48,7 @@ public:
     ~RtmpChunkBuffer();
 
 public:
-    void    init(int fmt, int cid, int basic_header_int, int msg_header_len, int payload_len, int msg_len, int msg_type);
+    void    init(int fmt, int cid, int basic_header_int, int msg_header_len, int payload_len, int msg_len, int msg_type, uint32_t stamp);
     char*   data() { return m_pBuffer; }
     char*   payload() { return m_pBuffer+m_nBasicHeaderLen+m_nMsgHeaderLen; }
     int     len() { return m_nLen; }
@@ -61,6 +61,7 @@ public:
     int     total_len() { return m_nBasicHeaderLen + m_nMsgHeaderLen + m_nPayloadLen; }
     int     msg_len() { return m_nMsgLen; }
     int     msg_type() { return m_nMsgType; }
+    uint32_t stamp() { return m_nStamp; }
 
 private:
     char*   m_pBuffer;
@@ -74,6 +75,7 @@ private:
     int     m_nPayloadLen;
     int     m_nMsgLen;
     int     m_nMsgType;
+    uint32_t m_nStamp;
 };
 
 /**
@@ -97,6 +99,7 @@ public:
     int     cid();
     int     msg_len();
     int     msg_type();
+    uint32_t stamp();
     int     left_len();
     bool    ready();
 

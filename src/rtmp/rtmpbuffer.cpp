@@ -17,6 +17,7 @@ RtmpChunkBuffer::RtmpChunkBuffer(const char* data, int len)
 , m_nPayloadLen(0)
 , m_nMsgLen(0)
 , m_nMsgType(0)
+, m_nStamp(0)
 {
     m_pBuffer = new char[len];
     memcpy(m_pBuffer, data, len);
@@ -27,7 +28,7 @@ RtmpChunkBuffer::~RtmpChunkBuffer() {
     delete m_pBuffer;
 }
 
-void    RtmpChunkBuffer::init(int fmt, int cid, int basic_header_int, int msg_header_len, int payload_len, int msg_len, int msg_type) {
+void    RtmpChunkBuffer::init(int fmt, int cid, int basic_header_int, int msg_header_len, int payload_len, int msg_len, int msg_type, uint32_t stamp) {
     m_nFmt = fmt;
     m_nCid = cid;
     m_nBasicHeaderLen = basic_header_int;
@@ -35,6 +36,7 @@ void    RtmpChunkBuffer::init(int fmt, int cid, int basic_header_int, int msg_he
     m_nPayloadLen = payload_len;
     m_nMsgLen = msg_len;
     m_nMsgType = msg_type;
+    m_nStamp = stamp;
 }
 
 RtmpMsgBuffer::RtmpMsgBuffer() 
@@ -100,6 +102,14 @@ int     RtmpMsgBuffer::msg_type() {
     }
 
     return m_arrChunks[0]->msg_type();
+}
+
+uint32_t RtmpMsgBuffer::stamp() {
+    if( m_arrChunks.size() == 0 ) {
+        return 0;
+    }
+
+    return m_arrChunks[0]->stamp();
 }
 
 int     RtmpMsgBuffer::left_len() {
@@ -297,7 +307,7 @@ bool    RtmpBuffer::parse() {
         chunk_header_len += 4;
     }
 
-    FUNLOG(Info, "rtmp buffer parse, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, msg_type=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, msg_type, len);
+    //FUNLOG(Info, "rtmp buffer parse, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, msg_type=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, msg_type, len);
     if( fmt == 0 || fmt == 1 ) {
         if( m_pCurMsg != NULL ) {
             FUNLOG(Info, "rtmp buffer parse, fmt==0||fmt==1, m_pCurMsg!=NULL, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, len);
@@ -317,7 +327,7 @@ bool    RtmpBuffer::parse() {
             m_pCurMsg = new RtmpMsgBuffer();
 
             RtmpChunkBuffer* chunk_buf = new RtmpChunkBuffer(m_pBuffer+m_nPos, chunk_total_len);
-            chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, msg_len, msg_type);
+            chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, msg_len, msg_type, stamp);
             m_pCurMsg->add_chunk(chunk_buf);
 
             if( m_pCurMsg->ready() ) {
@@ -349,7 +359,7 @@ bool    RtmpBuffer::parse() {
             m_pCurMsg = new RtmpMsgBuffer();
             
             RtmpChunkBuffer* chunk_buf = new RtmpChunkBuffer(m_pBuffer+m_nPos, chunk_total_len);
-            chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, msg_len, msg_type);
+            chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, msg_len, msg_type, stamp);
             m_pCurMsg->add_chunk(chunk_buf);
 
             if( m_pCurMsg->ready() ) {
@@ -382,7 +392,7 @@ bool    RtmpBuffer::parse() {
 
         if( m_nLen >= chunk_total_len ) {
             RtmpChunkBuffer* chunk_buf = new RtmpChunkBuffer(m_pBuffer+m_nPos, chunk_total_len);
-            chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, 0, 0);
+            chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, 0, 0, stamp);
             m_pCurMsg->add_chunk(chunk_buf);
 
             if( m_pCurMsg->ready() ) {

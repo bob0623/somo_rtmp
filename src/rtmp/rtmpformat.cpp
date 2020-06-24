@@ -299,6 +299,24 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         total_len += 11;
         header_len_pos += 3;
 
+    }  else if( m_header.type == RTMP_MSG_AudioMessage ) {
+        buf.write_3bytes(m_header.stamp);
+        buf.write_3bytes(m_header.len);
+        buf.write_1bytes(m_header.type);
+        buf.write_4bytes(m_header.id);
+
+        total_len += 11;
+        header_len_pos += 3;
+
+    }  else if( m_header.type == RTMP_MSG_VideoMessage ) {
+        buf.write_3bytes(m_header.stamp);
+        buf.write_3bytes(m_header.len);
+        buf.write_1bytes(m_header.type);
+        //buf.write_4bytes(m_header.id);
+
+        total_len += 7;
+        header_len_pos += 3;
+
     } else if( m_header.type == RTMP_MSG_AMF0DataMessage ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
@@ -695,7 +713,10 @@ int     RtmpAudioPacket::encode(IOBuffer* buf) {
 }
 
 //video:
-RtmpVideoPacket::RtmpVideoPacket() {
+RtmpVideoPacket::RtmpVideoPacket() 
+: m_pBuf(NULL)
+, m_nLen(0)
+{
 
 }
 
@@ -704,8 +725,22 @@ RtmpVideoPacket::~RtmpVideoPacket() {
 }
 
 void    RtmpVideoPacket::decode(IOBuffer* buf) {
-    //FUNLOG(Info, "rtmp video packet, len=%d", buf->left());
+    int size = buf->left();
+    if( size == 0 )
+        return;
+
+    if( m_pBuf == NULL ) {
+        m_pBuf = new char[size];
+    }
+    buf->read_bytes(m_pBuf, size);
+    m_nLen = size;
+
+    //FUNLOG(Info, "rtmp video packet decode, size=%d", size);
 }
 
 int     RtmpVideoPacket::encode(IOBuffer* buf) {
+    buf->write_bytes(m_pBuf, m_nLen);
+    //FUNLOG(Info, "rtmp video packet encode, size=%d", m_nLen);
+
+    return m_nLen;
 }
