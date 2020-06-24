@@ -3,6 +3,8 @@
 #include "session.h"
 
 class RtmpStream;
+class AudioFrame;
+class VideoFrame;
 class RtmpPublisher : public Publisher {
 public:
     RtmpPublisher();

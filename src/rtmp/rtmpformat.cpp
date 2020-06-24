@@ -65,7 +65,7 @@ RtmpPacket*    RtmpPacketFactory::create_packet(uint32_t type) {
     } else if( type == RTMP_MSG_SetChunkSize ) {
         return new RtmpSetChunkSizePacket();
     } else if( type == RTMP_MSG_UserControlMessage ) {
-        return new RtmpUserControllerPacket();
+        return new RtmpUserCtlPacket();
     } else if( type == RTMP_MSG_WindowAcknowledgementSize ) {
         return new RtmpWindowAckSizePacket();
     } else if( type == RTMP_MSG_SetPeerBandwidth ) {
@@ -384,19 +384,51 @@ void    RtmpSetChunkSizePacket::set_chunk_size(uint32_t chunk_size) {
 }
 
 //user controller msg:
-RtmpUserControllerPacket::RtmpUserControllerPacket() {
+RtmpUserCtlPacket::RtmpUserCtlPacket()
+: m_nEvent(0)
+, m_nData(0)
+, m_nExtra(0)
+{
 
 }
 
-RtmpUserControllerPacket::~RtmpUserControllerPacket() {
+RtmpUserCtlPacket::RtmpUserCtlPacket(int event, uint32_t data, uint32_t extra)
+: m_nEvent(event)
+, m_nData(data)
+, m_nExtra(extra)
+{
 
 }
 
-void    RtmpUserControllerPacket::decode(IOBuffer* buf) {
+RtmpUserCtlPacket::~RtmpUserCtlPacket() {
 
 }
 
-int     RtmpUserControllerPacket::encode(IOBuffer* buf) {
+void    RtmpUserCtlPacket::decode(IOBuffer* buf) {
+    m_nEvent = buf->read_2bytes();
+    if( m_nEvent == RTMP_USER_CTL_FMS ) {
+        m_nData = buf->read_1bytes();
+    } else {
+        m_nData = buf->read_4bytes();
+    }
+
+    if( m_nEvent == RTMP_USER_CTL_SET_BUFFER_LENGTH ) {
+        m_nExtra = buf->read_4bytes();
+    }
+}
+
+int     RtmpUserCtlPacket::encode(IOBuffer* buf) {
+    buf->write_2bytes(m_nEvent);
+    if( m_nEvent == RTMP_USER_CTL_FMS ) {
+        buf->write_1bytes(m_nData);
+    } else {
+        buf->write_4bytes(m_nData);
+    }
+
+    if( m_nEvent == RTMP_USER_CTL_SET_BUFFER_LENGTH ) {
+        buf->write_4bytes(m_nExtra);
+    }
+
     return 0;
 }
 
@@ -514,7 +546,7 @@ RtmpCommandPacket::~RtmpCommandPacket() {
 
 void    RtmpCommandPacket::decode(IOBuffer* buf) {
     rtmp_amf0_read_string(buf, m_strName);
-    //FUNLOG(Info, "rtmp command msg parse body, name=%s", m_strName.c_str());
+    FUNLOG(Info, "rtmp command msg parse body, name=%s", m_strName.c_str());
 
     if( m_strName == "connect" ) {
         double value = 0;
@@ -578,6 +610,23 @@ void    RtmpCommandPacket::decode(IOBuffer* buf) {
         m_pPublishParams->tid = (uint32_t)value;
         m_pPublishParams->stream = stream;
         m_pPublishParams->mode = mode;
+    }  else if( m_strName == "play" ) {
+        double tid = 0;
+        double start = 0;
+        double duration = 0;
+        std::string stream;
+
+        rtmp_amf0_read_number(buf, tid);
+        rtmp_amf0_read_null(buf);
+        rtmp_amf0_read_string(buf, stream);
+        rtmp_amf0_read_number(buf, start);
+        rtmp_amf0_read_number(buf, duration);
+
+        m_pPlayParams = new RtmpPlayParams();
+        m_pPlayParams->tid = (uint32_t)tid;
+        m_pPlayParams->stream = stream;
+        m_pPlayParams->start = start;
+        m_pPlayParams->duration = duration;
     } else {
         FUNLOG(Info, "rtmp unknown msg, m_strName=%s", m_strName.c_str());
     }

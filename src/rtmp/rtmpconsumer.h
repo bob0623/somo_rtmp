@@ -2,6 +2,8 @@
 
 #include "session.h"
 
+class AudioFrame;
+class VideoFrame;
 class RtmpConsumer : public Consumer {
 public:
     RtmpConsumer();

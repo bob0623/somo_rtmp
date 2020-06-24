@@ -37,6 +37,15 @@
 #define RTMP_MSG_VideoMessage                   9 // 0x09
 #define RTMP_MSG_AggregateMessage               22 // 0x16
 
+#define RTMP_USER_CTL_STREAM_BEGIN              0
+#define RTMP_USER_CTL_STREAM_EOF                1
+#define RTMP_USER_CTL_STREAM_DRY                2
+#define RTMP_USER_CTL_SET_BUFFER_LENGTH         3
+#define RTMP_USER_CTL_STREAM_IS_RECORDED        4
+#define RTMP_USER_CTL_PING_REQUEST              6
+#define RTMP_USER_CTL_PING_RESPONSE             7
+#define RTMP_USER_CTL_FMS                       0x1a
+
 class RtmpAmf0Any;
 class RtmpAmf0Object;
 
@@ -78,6 +87,13 @@ struct RtmpPublishParams {
     uint32_t        tid;
     std::string     stream;
     std::string     mode;
+};
+
+struct RtmpPlayParams {
+    uint32_t        tid;
+    std::string     stream;
+    double          start;
+    double          duration;
 };
 
 class IOBuffer;
@@ -213,15 +229,25 @@ private:
 };
 
 //User controller
-class RtmpUserControllerPacket : public RtmpPacket {
+class RtmpUserCtlPacket : public RtmpPacket {
 public:
-    RtmpUserControllerPacket();
-    ~RtmpUserControllerPacket();
+    RtmpUserCtlPacket();
+    RtmpUserCtlPacket(int event, uint32_t data, uint32_t extra);
+    ~RtmpUserCtlPacket();
 
 public:
     virtual void    decode(IOBuffer* buf);
     virtual int     encode(IOBuffer* buf);
 
+public:
+    void    set_event(int event) { m_nEvent = event; }
+    void    set_data(uint32_t data) { m_nData = data; }
+    void    set_extra(uint32_t extra) { m_nExtra = extra; }
+
+private:
+    int     m_nEvent;
+    uint32_t    m_nData;
+    uint32_t    m_nExtra;
 
 };
 
@@ -310,6 +336,7 @@ public:
     RtmpFCPublishParams*fcpublish_packet() { return m_pFCPublishParams; }
     RtmpCreateStreamParams* create_stream_packet() { return m_pCreateStreamParams; }
     RtmpPublishParams*  publish_packet() { return m_pPublishParams; }
+    RtmpPlayParams*     play_packet() { return m_pPlayParams; }
 
 private:
     std::string     get_amf_prop(RtmpAmf0Object* obj, const std::string& prop);
@@ -321,6 +348,7 @@ private:
     RtmpFCPublishParams*        m_pFCPublishParams;
     RtmpCreateStreamParams*     m_pCreateStreamParams;
     RtmpPublishParams*          m_pPublishParams;
+    RtmpPlayParams*             m_pPlayParams;
 
     std::vector<RtmpAmf0Any*>    m_arrAmfObjs;
 };

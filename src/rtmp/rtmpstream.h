@@ -42,6 +42,10 @@ private:
     void    ack_publish(RtmpChunkStream* chunk_stream, uint32_t tid, uint32_t stream_id);
     void    ack_publish_onstatus(RtmpChunkStream* chunk_stream);
 
+    void    ack_play(RtmpChunkStream* chunk_stream, uint32_t tid);
+    void    ack_stream_begin(RtmpChunkStream* chunk_stream);
+    void    ack_ping(RtmpChunkStream* chunk_stream, uint32_t data);
+
 private:
     RtmpConnection* m_pConnection;
     RtmpPublisher*  m_pPublisher;

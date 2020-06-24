@@ -100,4 +100,5 @@ public:
     RtmpMsgBuffer*    m_pCurMsg;
     int     m_nLastLen;
     int     m_nLastType;
+    bool    m_bFirstMsg;    //first msg maybe SET_CHUNK_SIZE, don't do batch parse on this case.
 };

@@ -1,9 +1,11 @@
 #include "rtmpstream.h"
 #include "app.h"
+#include "session.h"
 #include "rtmpformat.h"
 #include "rtmpconnection.h"
 #include "rtmppublisher.h"
 #include "rtmpconsumer.h"
+#include "rtmpsession.h"
 #include "rtmpparser.h"
 #include "rtmpbuffer.h"
 #include "rtmpamf.h"
@@ -113,6 +115,27 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         //2, if stream exist, report fail!
         //3, if stream not exist, create it with App.
         App::Ins()->add_session( packet->publish_packet()->stream, PROTOCOL_RTMP); 
+    } else if( packet->name() == "play" ) {
+        uint32_t tid = packet->play_packet()->tid;
+        FUNLOG(Info, "rtmp session command play, stream=%s", packet->play_packet()->stream.c_str());
+        ack_stream_begin(msg->chunk_stream());
+        ack_play(msg->chunk_stream(), tid);
+
+        m_nType = RTMP_SESSION_TYPE_PLAY;
+        m_pConsumer = new RtmpConsumer();
+
+        //put this as session consumer:
+        //1, verify the stream doesn't exist!
+        //2, if stream exist, report fail!
+        //3, if stream not exist, create it with App.
+        Session* session = App::Ins()->get_session(packet->play_packet()->stream);
+        if( session == NULL ) {
+            FUNLOG(Error, "rtmp session command play, session not exist for stream=%s", packet->play_packet()->stream.c_str());
+            return;
+        } else {
+            RtmpConsumer* consumer = new RtmpConsumer();
+            session->add_consumer(consumer);
+        }
     }
 }
 
@@ -313,3 +336,59 @@ void    RtmpStream::ack_publish_onstatus(RtmpChunkStream* chunk_stream) {
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
+void    RtmpStream::ack_play(RtmpChunkStream* chunk_stream, uint32_t tid) {
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
+    RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session play result, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+    packet->set_name("onStatus");
+    packet->add_amf0_object( RtmpAmf0Any::number(0) );
+    packet->add_amf0_object( RtmpAmf0Any::null());
+    
+    RtmpAmf0Object* obj1 = RtmpAmf0Any::object();
+    obj1->set("level", RtmpAmf0Any::str("status"));
+    obj1->set("code", RtmpAmf0Any::str("NetStream.Play.Start"));
+    obj1->set("description", RtmpAmf0Any::str("Start live"));
+    packet->add_amf0_object(obj1);
+
+    packet->add_amf0_object( RtmpAmf0Any::object_eof() );
+
+    //send the data:
+    memset(m_pSendBuf, 0, m_nSendBufCapacity);
+    int total_len = msg->get_full_data(0, chunk_stream->cid(), m_pSendBuf, m_nSendBufCapacity);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
+void    RtmpStream::ack_stream_begin(RtmpChunkStream* chunk_stream) {
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_UserControlMessage);
+    RtmpUserCtlPacket* packet = (RtmpUserCtlPacket*)msg->packet();
+
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session ack ping failed, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+    packet->set_event(RTMP_USER_CTL_STREAM_BEGIN);
+    packet->set_data(1);
+
+    int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
+    FUNLOG(Info, "rtmp session ack stream begin, total_len=%d", total_len);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
+void    RtmpStream::ack_ping(RtmpChunkStream* chunk_stream, uint32_t data) {
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_UserControlMessage);
+    RtmpUserCtlPacket* packet = (RtmpUserCtlPacket*)msg->packet();
+
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session ack ping failed, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+    packet->set_event(RTMP_USER_CTL_PING_RESPONSE);
+    packet->set_data(data);
+
+    int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
+    FUNLOG(Info, "rtmp session ack ping, total_len=%d", total_len);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
