@@ -1,7 +1,8 @@
 #include "rtmpconsumer.h"
 
-RtmpConsumer::RtmpConsumer(uint32_t id)
-: m_nId(id) 
+RtmpConsumer::RtmpConsumer(RtmpStream* stream, uint32_t id)
+: m_pStream(stream)
+, m_nId(id) 
 {
 
 }

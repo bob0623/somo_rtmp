@@ -22,9 +22,11 @@ public:
 
 public:
     void    on_msg(RtmpMessage* msg);
-    uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
+    bool    is_publisher();
+    bool    is_consumer();
     RtmpPublisher*  publisher() { return m_pPublisher; }
     RtmpConsumer*   consumer() { return m_pConsumer; }
+    uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
 
 private:
     void    on_command(RtmpMessage* msg);

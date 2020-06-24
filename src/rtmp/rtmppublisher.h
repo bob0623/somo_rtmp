@@ -7,7 +7,7 @@ class AudioFrame;
 class VideoFrame;
 class RtmpPublisher : public Publisher {
 public:
-    RtmpPublisher();
+    RtmpPublisher(RtmpStream* stream);
     ~RtmpPublisher();
 
 public:
@@ -15,6 +15,6 @@ public:
     virtual void    on_video(VideoFrame* frame);
 
 private:
-
+    RtmpStream* m_pStream;
 };
 

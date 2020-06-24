@@ -4,6 +4,14 @@
 #include "isnet.h"
 #include <map>
 
+/**
+ * That's the map, a connection map to a RtmpStream. A Stream is either a RtmpPubsher or RtmpConsumer.
+ * 
+ * RtmpConnection->Connection->ISNLink
+ * RtmpConnection->RtmpStream->RtmpPublisher/RtmpConsumer
+ * RtmpSession-> 1*RtmpPublisher + N*RtmpConsumer
+ */
+
 class RtmpStream;
 class RtmpBuffer;
 class RtmpMsgBuffer;

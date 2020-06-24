@@ -1,6 +1,8 @@
 #include "rtmppublisher.h"
 
-RtmpPublisher::RtmpPublisher() {
+RtmpPublisher::RtmpPublisher(RtmpStream* stream)
+: m_pStream(stream) 
+{
 
 }
 

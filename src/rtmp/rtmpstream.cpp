@@ -70,6 +70,14 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
     }
 }
 
+bool    RtmpStream::is_publisher() {
+    return m_nType == RTMP_SESSION_TYPE_PUBLISH;
+}  
+    
+bool    RtmpStream::is_consumer() {
+    return m_nType == RTMP_SESSION_TYPE_PLAY;
+}
+
 void    RtmpStream::on_command(RtmpMessage* msg) {
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet->name() == "connect" ) {
@@ -108,13 +116,15 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         ack_publish_onstatus(msg->chunk_stream());
 
         m_nType = RTMP_SESSION_TYPE_PUBLISH;
-        m_pPublisher = new RtmpPublisher();
+        m_pPublisher = new RtmpPublisher(this);
 
         //put this as session publisher:
         //1, verify the stream doesn't exist!
         //2, if stream exist, report fail!
         //3, if stream not exist, create it with App.
-        App::Ins()->add_session( packet->publish_packet()->stream, PROTOCOL_RTMP); 
+        Session* session = App::Ins()->add_session( packet->publish_packet()->stream, PROTOCOL_RTMP); 
+        session->set_publisher(m_pPublisher);
+
     } else if( packet->name() == "play" ) {
         uint32_t tid = packet->play_packet()->tid;
         FUNLOG(Info, "rtmp session command play, stream=%s", packet->play_packet()->stream.c_str());
@@ -122,7 +132,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         ack_play(msg->chunk_stream(), tid);
 
         m_nType = RTMP_SESSION_TYPE_PLAY;
-        m_pConsumer = new RtmpConsumer(m_pConnection->linkid());
+        m_pConsumer = new RtmpConsumer(this, m_pConnection->linkid());
 
         //put this as session consumer:
         //1, verify the stream doesn't exist!

@@ -2,11 +2,12 @@
 
 #include "session.h"
 
+class RtmpStream;
 class AudioFrame;
 class VideoFrame;
 class RtmpConsumer : public Consumer {
 public:
-    RtmpConsumer(uint32_t id);
+    RtmpConsumer(RtmpStream* stream, uint32_t id);
     ~RtmpConsumer();
 
 public:
@@ -16,5 +17,6 @@ public:
 
 private:
     uint32_t    m_nId;
+    RtmpStream* m_pStream;
 };
 

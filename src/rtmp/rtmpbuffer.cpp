@@ -303,7 +303,6 @@ bool    RtmpBuffer::parse() {
             FUNLOG(Info, "rtmp buffer parse, fmt==0||fmt==1, m_pCurMsg!=NULL, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, len);
             delete m_pCurMsg;
         }
-        m_pCurMsg = new RtmpMsgBuffer();
 
         //calc this chunk size:
         int payload_len = msg_len;
@@ -311,10 +310,12 @@ bool    RtmpBuffer::parse() {
         if( m_nChunkSize != 0 && msg_len>m_nChunkSize ) {
             payload_len = m_nChunkSize;
             chunk_total_len = basic_header_len+chunk_header_len+m_nChunkSize;
-            FUNLOG(Info, "rtmp buffer parse, msg_len>chunk_size, msg_len=%d, chunk_total_len=%d, m_nChunkSize=%d", msg_len, chunk_total_len, m_nChunkSize);
+            //FUNLOG(Info, "rtmp buffer parse, msg_len>chunk_size, msg_len=%d, chunk_total_len=%d, m_nChunkSize=%d", msg_len, chunk_total_len, m_nChunkSize);
         }
 
         if( m_nLen >= chunk_total_len ) {
+            m_pCurMsg = new RtmpMsgBuffer();
+
             RtmpChunkBuffer* chunk_buf = new RtmpChunkBuffer(m_pBuffer+m_nPos, chunk_total_len);
             chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, msg_len, msg_type);
             m_pCurMsg->add_chunk(chunk_buf);
@@ -337,7 +338,6 @@ bool    RtmpBuffer::parse() {
             FUNLOG(Info, "rtmp buffer parse, fmt==2, m_pCurMsg!=NULL, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, len);
             delete m_pCurMsg;
         }
-        m_pCurMsg = new RtmpMsgBuffer();
 
         msg_len = m_nLastLen;
         msg_type = m_nLastType;
@@ -346,12 +346,14 @@ bool    RtmpBuffer::parse() {
         int payload_len = msg_len;
         int chunk_total_len = basic_header_len+chunk_header_len+msg_len;
         if( m_nLen >= chunk_total_len ) {
+            m_pCurMsg = new RtmpMsgBuffer();
+            
             RtmpChunkBuffer* chunk_buf = new RtmpChunkBuffer(m_pBuffer+m_nPos, chunk_total_len);
             chunk_buf->init(fmt, cid, basic_header_len, chunk_header_len, payload_len, msg_len, msg_type);
             m_pCurMsg->add_chunk(chunk_buf);
 
             if( m_pCurMsg->ready() ) {
-                m_pCurMsg->dump_ready();
+                //m_pCurMsg->dump_ready();
                 m_arrChunks.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             }
@@ -373,9 +375,9 @@ bool    RtmpBuffer::parse() {
         if( left >= m_nChunkSize ) {
             payload_len = m_nChunkSize;
             chunk_total_len = basic_header_len + payload_len;
-            FUNLOG(Info, "rtmp buffer parse, fmt==3, left>chunk_size, chunk_total_len=%d, payload_len=%d, left=%d", chunk_total_len, payload_len, left);
+            //FUNLOG(Info, "rtmp buffer parse, fmt==3, left>chunk_size, chunk_total_len=%d, payload_len=%d, left=%d", chunk_total_len, payload_len, left);
         } else {
-            FUNLOG(Info, "rtmp buffer parse, fmt==3, left<chunk_size, chunk_total_len=%d, payload_len=%d, left=%d", chunk_total_len, payload_len, left);
+            //FUNLOG(Info, "rtmp buffer parse, fmt==3, left<chunk_size, chunk_total_len=%d, payload_len=%d, left=%d", chunk_total_len, payload_len, left);
         }
 
         if( m_nLen >= chunk_total_len ) {
