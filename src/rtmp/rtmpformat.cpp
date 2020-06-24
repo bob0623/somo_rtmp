@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define __CLASS__   "RtmpProtocol"
+#define __CLASS__   "RtmpFormat"
 
 RtmpChunkStream::RtmpChunkStream(int cid) 
 : m_nCid(cid)
@@ -50,6 +50,7 @@ void    RtmpChunkStream::add_payload(const char* data, int len) {
     //FUNLOG(Info, "rtmp chunk steam add payload, msg_len=%d, readed=%d, len=%d", m_pMsg->msg_len(), m_pMsg->len(), len);
 }
 
+/*
 void    RtmpChunkStream::add_payload_fmt0(const char* data, int len) {
     if( m_pMsg == NULL ) {
         //something wrong, no vaid msg:
@@ -58,6 +59,7 @@ void    RtmpChunkStream::add_payload_fmt0(const char* data, int len) {
     }
     m_pMsg->add_payload_fmt0(data, len);
 }
+*/
 
 RtmpPacket*    RtmpPacketFactory::create_packet(uint32_t type) {
     if( type == 0 ) {
@@ -211,9 +213,8 @@ void    RtmpMessage::add_payload(const char* data, int len) {
     }
 }
 
+/*
 void    RtmpMessage::add_payload_fmt0(const char* data, int len) {
-
-
     memcpy(m_pBuf+m_nLen, data, len);
     m_nLen += len;
 
@@ -223,6 +224,7 @@ void    RtmpMessage::add_payload_fmt0(const char* data, int len) {
         m_pPacket->decode(&buf);
     }
 }
+*/
 
 int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
     int total_len = 0;
@@ -270,6 +272,15 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
 
         total_len += 11;
         header_len_pos += 3;
+    }  else if( m_header.type == RTMP_MSG_UserControlMessage ) {
+        buf.write_3bytes(m_header.stamp);
+        buf.write_3bytes(m_header.len);
+        buf.write_1bytes(m_header.type);
+        buf.write_4bytes(m_header.id);
+
+        total_len += 11;
+        header_len_pos += 3;
+
     } else if( m_header.type == RTMP_MSG_WindowAcknowledgementSize ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
@@ -418,18 +429,25 @@ void    RtmpUserCtlPacket::decode(IOBuffer* buf) {
 }
 
 int     RtmpUserCtlPacket::encode(IOBuffer* buf) {
+    int len = 0;
+
     buf->write_2bytes(m_nEvent);
+    len += 2;
+
     if( m_nEvent == RTMP_USER_CTL_FMS ) {
         buf->write_1bytes(m_nData);
+        len += 1;
     } else {
         buf->write_4bytes(m_nData);
+        len += 4;
     }
 
     if( m_nEvent == RTMP_USER_CTL_SET_BUFFER_LENGTH ) {
         buf->write_4bytes(m_nExtra);
+        len += 4;
     }
 
-    return 0;
+    return len;
 }
 
 RtmpWindowAckSizePacket::RtmpWindowAckSizePacket() 

@@ -6,6 +6,37 @@
 #include <vector>
 
 /**
+ * RtmpBuffer: full data from Connection.on_data
+ * RtmpChunkBuffer: data for a RTMP Chunk.
+ * RtmpMsgBuffer: data for a RTMP Message.
+ * 
+ * Real scenario:
+ * int    RtmpConnection::on_data(const char* data, int len) {
+    if( !m_bShakeHands ) {
+        int ret = shake_hands(data, len);
+        if( ret == 0 ) {
+            FUNLOG(Error, "rtmp connect shake hands failed! linkid=%d, len=%d", linkid(), len);
+            return 0;
+        } else {
+            return ret;
+        }
+    }
+    m_pBuffer->push(data, len);
+
+    while( true ) {
+        RtmpMsgBuffer* msg_buf = m_pBuffer->get_msg_buf();
+        if( msg_buf != NULL ) {
+            handle_msg( msg_buf );
+        } else {
+            break;
+        }
+    }
+
+    return len;
+}
+ */
+
+/**
  * A chunk buffer represent a rtmp chunk.
  * RtmpBuffer receive data from network, and split the network data into RtmpChunkBuffer.
  * RtmpChunkBuffer will be transfer to RtmpBasicMsg, and then do rtmp logic.
@@ -47,7 +78,8 @@ private:
 
 /**
  * A rtmp msg buffer, just msg payload, not include basic_header & msg_header from RtmpChunkBuffer.
- *  
+ * 
+ * The msg buffer refer to VideoTag or AudioTag in FLV format spec.
  */
 class RtmpMsgBuffer {
 public:
@@ -74,6 +106,10 @@ private:
     int     m_nLen;
 };
 
+/**
+ * RtmpBuffer receive data from Connection.on_data, and convert the data into RtmpMsgBuffer.
+ * 
+ */
 class RtmpBuffer
 {
 public:
@@ -81,9 +117,25 @@ public:
     ~RtmpBuffer();
 
 public:
+    /**
+     * chunk_size is used to composite big messages from chunks, each chunk payload=chunk_size except the last chunk.
+     */
     void    set_chunk_size(uint32_t chunk_size);
+
+    /**
+     * receive data from Connection, usually called from Connection.on_data.
+     */
     void    push(const char* data, int len);
+
+    /**
+     * fetch RtmpMsgBuffer, each RtmpMsgBuffer refer to a RtmpMessage.
+     */
+
     RtmpMsgBuffer*    get_msg_buf();
+    
+    /**
+     * clear everything.
+     */
     void    clear();
 
 private:
@@ -95,10 +147,10 @@ public:
     int     m_nCapacity;
     int     m_nPos;
     int     m_nLen;
+    
     std::deque<RtmpMsgBuffer*>    m_arrChunks;
-    uint32_t    m_nChunkSize;
     RtmpMsgBuffer*    m_pCurMsg;
+    uint32_t    m_nChunkSize;
     int     m_nLastLen;
     int     m_nLastType;
-    bool    m_bFirstMsg;    //first msg maybe SET_CHUNK_SIZE, don't do batch parse on this case.
 };

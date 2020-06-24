@@ -134,7 +134,6 @@ RtmpBuffer::RtmpBuffer()
 , m_pCurMsg(NULL)
 , m_nLastLen(0)
 , m_nLastType(0)
-, m_bFirstMsg(true)
 {
     m_nCapacity = RTMP_BUFFER_MAX;
     m_pBuffer = new char[m_nCapacity];

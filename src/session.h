@@ -16,6 +16,7 @@ public:
 
 class Consumer {
 public:
+    virtual uint32_t  id() = 0;
     virtual void    on_audio(AudioFrame* frame) = 0;
     virtual void    on_video(VideoFrame* frame) = 0;
 };
@@ -28,7 +29,8 @@ public:
 public:
     void    set_publisher(Publisher* publisher);
     void    add_consumer(Consumer* consumer);
-    void    remove_consumer(uint32_t linkid);
+    void    remove_consumer(uint32_t id);
+    Consumer*   get_consumer(uint32_t id);
 
 public:
     void    on_audio();

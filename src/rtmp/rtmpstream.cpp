@@ -122,7 +122,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         ack_play(msg->chunk_stream(), tid);
 
         m_nType = RTMP_SESSION_TYPE_PLAY;
-        m_pConsumer = new RtmpConsumer();
+        m_pConsumer = new RtmpConsumer(m_pConnection->linkid());
 
         //put this as session consumer:
         //1, verify the stream doesn't exist!
@@ -133,8 +133,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
             FUNLOG(Error, "rtmp session command play, session not exist for stream=%s", packet->play_packet()->stream.c_str());
             return;
         } else {
-            RtmpConsumer* consumer = new RtmpConsumer();
-            session->add_consumer(consumer);
+            session->add_consumer(m_pConsumer);
         }
     }
 }
@@ -352,8 +351,6 @@ void    RtmpStream::ack_play(RtmpChunkStream* chunk_stream, uint32_t tid) {
     obj1->set("code", RtmpAmf0Any::str("NetStream.Play.Start"));
     obj1->set("description", RtmpAmf0Any::str("Start live"));
     packet->add_amf0_object(obj1);
-
-    packet->add_amf0_object( RtmpAmf0Any::object_eof() );
 
     //send the data:
     memset(m_pSendBuf, 0, m_nSendBufCapacity);

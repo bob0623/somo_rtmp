@@ -20,10 +20,31 @@ void    Session::set_publisher(Publisher* publisher) {
 }
 
 void    Session::add_consumer(Consumer* consumer) {
+    Consumer* old = get_consumer(consumer->id());
+    if( old != NULL ) {
+        FUNLOG(Info, "session add consumer failed! consumer exist for id=%d", old->id());
+        delete consumer;
+    }
 
+    m_mapConsumers[consumer->id()] = consumer;
 }
 
-void    Session::remove_consumer(uint32_t linkid) {
+void    Session::remove_consumer(uint32_t id) {
+    Consumer* consumer = get_consumer(id);
+    if( consumer == NULL ) {
+        FUNLOG(Error, "session remove consumer failed! not exist for id=%d", id);
+        return;
+    }
 
+    delete consumer;
+    m_mapConsumers.erase(id);
 }
 
+Consumer*   Session::get_consumer(uint32_t id) {
+    auto it = m_mapConsumers.find(id);
+    if( it == m_mapConsumers.end() ) {
+        return NULL;
+    }
+
+    return it->second;
+}

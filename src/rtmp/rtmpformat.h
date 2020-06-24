@@ -110,7 +110,7 @@ public:
     void    release_msg();
     RtmpMessage*   get_msg() { return m_pMsg; }
     void    add_payload(const char* data, int len);
-    void    add_payload_fmt0(const char* data, int len);
+    //void    add_payload_fmt0(const char* data, int len);
     int     cid() { return m_nCid; }
     int     last_type() { return m_nLastType; }
     int     last_len() { return m_nLastLen; }
@@ -157,7 +157,7 @@ public:
     RtmpPacket* packet() { return m_pPacket; }
 
     void    add_payload(const char* data, int len);
-    void    add_payload_fmt0(const char* data, int len);
+    //void    add_payload_fmt0(const char* data, int len);
 
     /**
      * get payload data, not including headers!
