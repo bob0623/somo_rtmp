@@ -19,6 +19,13 @@ void    Session::set_publisher(Publisher* publisher) {
     m_pPublisher = publisher;
 }
 
+void    Session::remove_publisher() {
+    if( m_pPublisher ) {
+        delete m_pPublisher;
+        m_pPublisher = NULL;
+    }
+}
+
 void    Session::add_consumer(Consumer* consumer) {
     Consumer* old = get_consumer(consumer->id());
     if( old != NULL ) {

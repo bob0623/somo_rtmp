@@ -1,6 +1,7 @@
 #include "rtmppublisher.h"
 #include "rtmpstream.h"
 #include "rtmpsession.h"
+#include "rtmpconnection.h"
 #include "rtmpformat.h"
 
 #include "video/videoframe.h"
@@ -23,6 +24,14 @@ RtmpPublisher::RtmpPublisher(RtmpStream* stream)
 
 RtmpPublisher::~RtmpPublisher() {
     delete m_pSeqHeader;
+}
+
+uint32_t  RtmpPublisher::id() {
+    if( m_pStream ) {
+        return m_pStream->connection()->linkid();
+    }
+
+    return 0;
 }
 
 void    RtmpPublisher::on_new_consumer(Consumer* consumer) {

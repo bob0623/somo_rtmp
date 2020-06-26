@@ -13,6 +13,7 @@ class VideoFrame;
 class AudioFrame;
 class Publisher {
 public:
+    virtual uint32_t  id() = 0;
     /**
      * callback when new consumer comes. this is useful when new consumer coming in and then publisher can send some data to init.
      */
@@ -58,9 +59,13 @@ public:
 
 public:
     void    set_publisher(Publisher* publisher);
+    void    remove_publisher();
     void    add_consumer(Consumer* consumer);
     void    remove_consumer(uint32_t id);
     Consumer*   get_consumer(uint32_t id);
+
+public:
+    Publisher*  publisher() { return m_pPublisher; }
 
 public:
     void    on_audio();

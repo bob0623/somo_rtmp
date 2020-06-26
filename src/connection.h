@@ -2,6 +2,7 @@
 
 #include <isnet.h>
 
+class Session;
 class Connection {
 public:
     Connection(ISNLink* link);
@@ -9,6 +10,7 @@ public:
 
 public:
     virtual int    on_data(const char* data, int len) = 0;
+    virtual Session*    session() = 0;
 
 public:
     void    send(const char* data, int len);

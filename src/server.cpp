@@ -1,6 +1,7 @@
 #include "server.h"
 #include "protocol.h"
 #include "connection.h"
+#include "session.h"
 #include "common/logger.h"
 
 #define __CLASS__ "Server"
@@ -45,6 +46,27 @@ void    Server::on_connected(ISNLink* link) {
 
 void    Server::on_close(ISNLink* link) {
     FUNLOG(Info, "rtmp connection close, id=%d", link->linkid());
+    //remove from Session:
+    Session* session = NULL;
+    Publisher* publisher = NULL;
+
+    //remove the connection:
+    auto it = m_mapConnections.find(link->linkid());
+    if( it == m_mapConnections.end() ) {
+        return;
+    }
+    session = it->second->session();
+    publisher = session->publisher();
+
+    if( publisher->id() == link->linkid() ) {
+        session->remove_publisher();
+    } else {
+        session->remove_consumer(link->linkid());
+    }
+
+    //delete the Connection:
+    delete it->second;
+    m_mapConnections.erase(it);
 }
 
 int    Server::on_data(const char* data, size_t len, ISNLink* link) {

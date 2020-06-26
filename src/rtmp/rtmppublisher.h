@@ -12,6 +12,7 @@ public:
     ~RtmpPublisher();
 
 public:
+    virtual uint32_t  id();
     virtual void    on_new_consumer(Consumer* consumer);
 
     virtual void    on_audio(AudioFrame* frame);

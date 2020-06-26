@@ -1,5 +1,6 @@
 #include "rtmpconnection.h"
 #include "rtmpshakehands.h"
+#include "rtmpsession.h"
 #include "rtmpstream.h"
 #include "rtmpformat.h"
 #include "rtmpbuffer.h"
@@ -49,6 +50,10 @@ int    RtmpConnection::on_data(const char* data, int len) {
     return len;
 }
 
+Session* RtmpConnection::session() {
+    return m_pStream->session();
+}
+
 int     RtmpConnection::shake_hands(const char* data, int len) {
     int ret = m_pShakeHands->on_data(data, len);
     if( ret == 0 )
@@ -63,11 +68,6 @@ int     RtmpConnection::shake_hands(const char* data, int len) {
 
 void     RtmpConnection::handle_msg(RtmpMsgBuffer* msg_buf) {
     RtmpChunkStream* chunk_stream = get_chunk_stream( msg_buf->cid() );
-    //new stream first msg:
-    //if( chunk_stream != NULL ) {
-    //    FUNLOG(Error, "rtmp connection handle chunk, fmt==0 but chunk_stream exist! cid=%d, total_len=%d", msg_buf->cid(), msg_buf->msg_len());
-        //return basic_header_len+chunk_header_len+msg_len;
-    //}
     if( chunk_stream == NULL ) {
         chunk_stream = new RtmpChunkStream(msg_buf->cid());
         m_mapStreams[msg_buf->cid()] = chunk_stream;

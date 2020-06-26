@@ -61,7 +61,7 @@ public:
     void    parse_video_avc_packet(const char* buf, size_t size, VideoFrame* frame);
     void    parse_video_decoder_config(const char* buf, size_t size, VideoFrame* frame);
     void    parse_video_nalu(const char* buf, size_t size, VideoFrame* frame);
-    void    parse_audio(const char* buf, size_t size, AudioFrame* frame);
+    void    parse_audio_tag(const char* buf, size_t size, AudioFrame* frame);
 
 public:
     bool    is_video_sh();

@@ -26,6 +26,7 @@ public:
 
 public:
     virtual int on_data(const char* data, int len);
+    virtual Session* session();
 
 public:
     RtmpStream* stream() { return m_pStream; }

@@ -19,5 +19,9 @@ void    Connection::send(const char* data, int len) {
 }
 
 void    Connection::close() {
+    if( m_pLink == NULL )
+        return;
+        
     m_pLink->close();
+    m_pLink = NULL;
 }

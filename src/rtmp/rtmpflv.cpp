@@ -275,7 +275,7 @@ void    RtmpFlvParser::parse_video_nalu(const char* buf, size_t size, VideoFrame
     }
 }
 
-void    RtmpFlvParser::parse_audio(const char* buf, size_t size, AudioFrame* frame) {
+void    RtmpFlvParser::parse_audio_tag(const char* buf, size_t size, AudioFrame* frame) {
     char* temp = (char*)buf;
     int len = size;
     int aac_packet_type = 0;
