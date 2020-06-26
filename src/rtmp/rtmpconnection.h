@@ -25,15 +25,15 @@ public:
     ~RtmpConnection();
 
 public:
-    virtual int    on_data(const char* data, int len);
+    virtual int on_data(const char* data, int len);
 
 public:
-    RtmpStream*    stream() { return m_pStream; }
-    RtmpBuffer*     buffer() { return m_pBuffer; }
+    RtmpStream* stream() { return m_pStream; }
+    RtmpBuffer* buffer() { return m_pBuffer; }
 
 private:
-    int         shake_hands(const char* data, int len);
-    void        handle_msg(RtmpMsgBuffer* msg_buf);
+    int shake_hands(const char* data, int len);
+    void handle_msg(RtmpMsgBuffer* msg_buf);
     RtmpChunkStream*get_chunk_stream(int cid);
 
 private:

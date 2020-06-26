@@ -45,9 +45,10 @@ class Consumer {
 public:
     virtual uint32_t  id() = 0;
     virtual void    on_audio(AudioFrame* frame) = 0;
+    virtual void    on_audio_rtmp(const char* data, int len) = 0;
     virtual void    on_video(VideoFrame* frame) = 0;
     virtual void    on_video_rtmp(const char* data, int len) = 0;
-    virtual void    send(const char* data, int len) = 0;
+    virtual void    on_video_rtmp_sh(const char* data, int len) = 0;
 };
 
 class Session {
@@ -63,6 +64,8 @@ public:
 
 public:
     void    on_audio();
+    void    on_audio_rtmp(const char* data, int len);
+
     void    on_video(VideoFrame* frame);
     void    on_video_rtmp(const char* data, int len);
 

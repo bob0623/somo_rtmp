@@ -26,15 +26,19 @@ void    RtmpConsumer::on_audio(AudioFrame* frame) {
 
 }
 
+void    RtmpConsumer::on_audio_rtmp(const char* data, int len) {
+    m_pStream->connection()->send(data, len);
+}
+
 void    RtmpConsumer::on_video(VideoFrame* frame) {
-    //FUNLOG(Info, "rtmp consumer on video, len=%d", frame->size());
+
 }
 
 void    RtmpConsumer::on_video_rtmp(const char* data, int len) {
     m_pStream->connection()->send(data, len);
 }
 
-void    RtmpConsumer::send(const char* data, int len) {
+void    RtmpConsumer::on_video_rtmp_sh(const char* data, int len) {
     m_pStream->connection()->send(data, len);
 }
 

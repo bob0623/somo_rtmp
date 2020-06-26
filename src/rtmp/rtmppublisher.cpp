@@ -27,7 +27,7 @@ RtmpPublisher::~RtmpPublisher() {
 
 void    RtmpPublisher::on_new_consumer(Consumer* consumer) {
     FUNLOG(Info, "rtmp publisher on new consumer, consumer_id=%d", consumer->id());
-    consumer->send( m_pSeqHeader, m_nSeqHeaderLen );
+    consumer->on_video_rtmp_sh( m_pSeqHeader, m_nSeqHeaderLen );
 }
 
 void    RtmpPublisher::on_audio(AudioFrame* frame) {
@@ -37,6 +37,15 @@ void    RtmpPublisher::on_audio(AudioFrame* frame) {
         FUNLOG(Info, "rtmp publisher on audio frame, frames=%d, size=%d", m_nAudioFrames, frame->size());
     }
     
+}
+
+void    RtmpPublisher::on_audio_rtmp(const char* data, int len) {
+    m_nAudioFrames++;
+
+    if( m_nAudioFrames%100 == 0 || m_nAudioFrames <= 5) {
+        FUNLOG(Info, "rtmp publisher on audio frame, frames=%d, size=%d,", m_nAudioFrames, len);
+    }
+    m_pStream->session()->on_audio_rtmp(data, len);
 }
 
 void    RtmpPublisher::on_video(VideoFrame* frame) {
