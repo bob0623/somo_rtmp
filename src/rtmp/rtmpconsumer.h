@@ -15,6 +15,7 @@ public:
     virtual void    on_audio(AudioFrame* frame);
     virtual void    on_video(VideoFrame* frame);
     virtual void    on_video_rtmp(const char* data, int len);
+    virtual void    send(const char* data, int len);
 
 private:
     uint32_t    m_nId;

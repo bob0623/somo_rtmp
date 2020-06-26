@@ -41,13 +41,15 @@ public:
     ~RtmpParser();
 
 public:
-    void    parse_video(uint8_t* buf, size_t size, VideoFrame* frame);
-    void    parse_video_avc_seq_header(uint8_t* buf, size_t size);
-    void    parse_video_avc_packet(uint8_t* buf, size_t size, VideoFrame* frame);
-    void    parse_video_decoder_config(uint8_t* buf, size_t size, VideoFrame* frame);
-    void    parse_video_nalu(uint8_t* buf, size_t size, VideoFrame* frame);
+    void    parse_video_tag(const char* buf, size_t size, VideoFrame* frame);
+    void    parse_video_avc_seq_header(const char* buf, size_t size);
+    void    parse_video_avc_packet(const char* buf, size_t size, VideoFrame* frame);
+    void    parse_video_decoder_config(const char* buf, size_t size, VideoFrame* frame);
+    void    parse_video_nalu(const char* buf, size_t size, VideoFrame* frame);
+    void    parse_audio(const char* buf, size_t size, AudioFrame* frame);
 
-    void    parse_audio(uint8_t* buf, size_t size, AudioFrame* frame);
+public:
+    bool    is_video_sh();
 
 private:
     int     flv_sample_rate_2_somo(int flv_sample_rate);

@@ -27,6 +27,11 @@ void    Session::add_consumer(Consumer* consumer) {
     }
 
     m_mapConsumers[consumer->id()] = consumer;
+
+    //maybe need to send some config data to new consumer:
+    //Ex: RTMP Sequence header need to be sent to new consumer.
+    //
+    m_pPublisher->on_new_consumer(consumer);
 }
 
 void    Session::remove_consumer(uint32_t id) {

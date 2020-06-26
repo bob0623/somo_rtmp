@@ -5,13 +5,19 @@
 #include <string>
 #include <map>
 
+class Consumer;
+class Publisher;
+class Session;
+
 class VideoFrame;
 class AudioFrame;
 class Publisher {
 public:
+    virtual void    on_new_consumer(Consumer* consumer) = 0;
     virtual void    on_audio(AudioFrame* frame) = 0;
+    virtual void    on_video_sh(const char* data, int len) = 0;
     virtual void    on_video(VideoFrame* frame) = 0;
-     
+    virtual void    on_video_rtmp(const char* data, int len) = 0;
 };
 
 class Consumer {
@@ -20,6 +26,7 @@ public:
     virtual void    on_audio(AudioFrame* frame) = 0;
     virtual void    on_video(VideoFrame* frame) = 0;
     virtual void    on_video_rtmp(const char* data, int len) = 0;
+    virtual void    send(const char* data, int len) = 0;
 };
 
 class Session {

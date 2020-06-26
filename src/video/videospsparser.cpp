@@ -198,7 +198,7 @@ void vui_para_parse(sps_bit_stream *bs, sps_info *info)
 
 //See 7.3.1 NAL unit syntax
 //See 7.3.2.1.1 Sequence parameter set data syntax
-INT h264_parse_sps(const BYTE *data, UINT dataSize, sps_info *info)
+INT h264_parse_sps(const char *data, UINT dataSize, sps_info *info)
 {
     if (!data || dataSize <= 0 || !info) return 0;
     INT ret = 0;

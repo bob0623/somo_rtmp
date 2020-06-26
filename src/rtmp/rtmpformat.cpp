@@ -720,8 +720,14 @@ RtmpVideoPacket::RtmpVideoPacket()
 
 }
 
-RtmpVideoPacket::~RtmpVideoPacket() {
+RtmpVideoPacket::RtmpVideoPacket(const char* data, int len) {
+    m_nLen = len;
+    m_pBuf = new char[m_nLen];
+    memcpy(m_pBuf, data, len);
+}
 
+RtmpVideoPacket::~RtmpVideoPacket() {
+    delete m_pBuf;
 }
 
 void    RtmpVideoPacket::decode(IOBuffer* buf) {

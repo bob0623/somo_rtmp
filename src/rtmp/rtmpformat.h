@@ -364,9 +364,14 @@ public:
 
 };
 
+/**
+ * RtmpVideoPacket is the payload part of a RTMP message, that is: merge chunks of the same RTMP message.
+ * RtmpVideoPacket is indeed a FlvVideoTag object! 
+ */
 class RtmpVideoPacket : public RtmpPacket {
 public:
     RtmpVideoPacket();
+    RtmpVideoPacket(const char* data, int len);
     ~RtmpVideoPacket();
 
 public:

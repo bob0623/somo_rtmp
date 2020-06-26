@@ -1,6 +1,5 @@
 #include "rtmpstream.h"
-#include "app.h"
-#include "session.h"
+#include "rtmpparser.h"
 #include "rtmpformat.h"
 #include "rtmpconnection.h"
 #include "rtmppublisher.h"
@@ -9,6 +8,8 @@
 #include "rtmpparser.h"
 #include "rtmpbuffer.h"
 #include "rtmpamf.h"
+#include "app.h"
+#include "session.h"
 
 #include "video/videoframe.h"
 #include "video/videoframepool.h"
@@ -29,8 +30,6 @@ RtmpStream::RtmpStream(RtmpConnection* conn)
 , m_pPublisher(NULL)
 , m_pConsumer(NULL)
 , m_nType(RTMP_SESSION_TYPE_UNKNOWN)
-, m_nAudioFrames(0)
-, m_nVideoFrames(0)
 {
     m_nSendBufCapacity = 1024*128;
     m_pSendBuf = new char[ m_nSendBufCapacity];
@@ -158,32 +157,29 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
 
 
 void    RtmpStream::on_audio(RtmpMessage* msg) {
-    m_nAudioFrames++;
-
-    if( m_nAudioFrames%100 == 0 || m_nAudioFrames <= 5 ) {
-        FUNLOG(Info, "rtmp session on audio frame, frames=%d, size=%d", m_nAudioFrames, msg->msg_len());
+    if( m_nType != RTMP_SESSION_TYPE_PUBLISH ) {
+        return;
     }
 
-    //AudioFrame* frame = AudioFramePool::Ins()->get( msg->payload_len() );
-    //m_pParser->parse_audio( (uint8_t*)msg->payload(), (size_t)msg->payload_len(), frame );
-    //AudioFramePool::Ins()->free(frame);
+    
 }
 
 void    RtmpStream::on_video(RtmpMessage* msg) {
-    m_nVideoFrames++;
-
-    if( m_nVideoFrames%30 == 0 || m_nVideoFrames <= 5) {
-        FUNLOG(Info, "rtmp session on video frame, frames=%d, size=%d,", m_nVideoFrames, msg->msg_len());
+    if( m_nType != RTMP_SESSION_TYPE_PUBLISH ) {
+        return;
     }
-    
+
     int total_len = msg->get_full_data(1, msg->chunk_stream()->cid(), m_pSendBuf, m_nSendBufCapacity);
-    m_pSession->on_video_rtmp(m_pSendBuf, total_len);
-    /*
+    m_pPublisher->on_video_rtmp( m_pSendBuf, total_len );
+
+    //parse the rtmp payload, which should be VideoTag:
     VideoFrame* frame = VideoFramePool::Ins()->get( msg->payload_len() );
-    m_pParser->parse_video((uint8_t*)msg->payload(), (size_t)msg->payload_len(), frame );
-    m_pSession->on_video(frame);
-    VideoFramePool::Ins()->free(frame);
-    */
+    m_pParser->parse_video_tag( msg->payload(), msg->payload_len(), frame );
+    if( m_pParser->is_video_sh() ) {
+        m_pPublisher->on_video_sh(m_pSendBuf, total_len);
+    }
+    VideoFramePool::Ins()->free( frame );
+
 }
 
 void    RtmpStream::ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size) {

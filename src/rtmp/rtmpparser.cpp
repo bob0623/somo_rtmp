@@ -13,7 +13,7 @@
 
 #define __CLASS__ "RtmpParser"
 
-int bytesToInt(uint8_t* src) {
+int bytesToInt(const char* src) {
     int value = (int) (((src[0] & 0xFF) << 24)
                    | ((src[1] & 0xFF) << 16)
                    | ((src[2] & 0xFF) << 8)
@@ -21,7 +21,7 @@ int bytesToInt(uint8_t* src) {
     return value;
 }
     
-int bytesToInt16(uint8_t* src) {
+int bytesToInt16(const char* src) {
     int value = (int) (((src[0] & 0xFF) << 8)
                        | (src[1] & 0xFF));
     return value;
@@ -51,7 +51,7 @@ RtmpParser::~RtmpParser()
     m_pFrame = NULL;
 }
 
-void    RtmpParser::parse_video(uint8_t* buf, size_t size, VideoFrame* frame) {
+void    RtmpParser::parse_video_tag(const char* buf, size_t size, VideoFrame* frame) {
     auto *p = buf;
     int readed = 0;
     header.frame_type = (*p&0xf0)>>4;
@@ -86,11 +86,11 @@ void    RtmpParser::parse_video(uint8_t* buf, size_t size, VideoFrame* frame) {
     }
 }
     
-void    RtmpParser::parse_video_avc_seq_header(uint8_t* buf, size_t size) {
+void    RtmpParser::parse_video_avc_seq_header(const char* buf, size_t size) {
     
 }
     
-void    RtmpParser::parse_video_avc_packet(uint8_t* buf, size_t size, VideoFrame* frame) {
+void    RtmpParser::parse_video_avc_packet(const char* buf, size_t size, VideoFrame* frame) {
     //FUNLOG(Info, "rtmp parse video tag, header.avc_packet_type = %d, size=%d", header.avc_packet_type, size);
     if( header.avc_packet_type == 0 ) {
         //AVCDecoderConfigurationRecord
@@ -101,8 +101,8 @@ void    RtmpParser::parse_video_avc_packet(uint8_t* buf, size_t size, VideoFrame
     }
 }
     
-void    RtmpParser::parse_video_decoder_config(uint8_t* buf, size_t size, VideoFrame* frame) {
-    uint8_t* temp = buf;
+void    RtmpParser::parse_video_decoder_config(const char* buf, size_t size, VideoFrame* frame) {
+    const char* temp = buf;
     avc_config.version = buf[0];
     avc_config.avc_profile = buf[1];
     avc_config.profile_compatibility = buf[2];
@@ -153,9 +153,9 @@ void    RtmpParser::parse_video_decoder_config(uint8_t* buf, size_t size, VideoF
     FUNLOG(Info, "rtmp parse video config, found sps&pps, sps_num={%d}, sps_len={%d}, pps_num={%d}, pps_len={%d}, width=%d,height=%d, fps=%d", avc_config.num_sps, sps_len,avc_config.num_pps, pps_len, frame->width(), frame->height(), frame->fps());
 }
     
-void    RtmpParser::parse_video_nalu(uint8_t* buf, size_t size, VideoFrame* frame) {
+void    RtmpParser::parse_video_nalu(const char* buf, size_t size, VideoFrame* frame) {
     uint8_t seperator[4] = {0,0,0,1};
-    uint8_t* temp = buf;
+    const char* temp = buf;
     int total = 0;
     int len;
     int b1;
@@ -200,7 +200,7 @@ void    RtmpParser::parse_video_nalu(uint8_t* buf, size_t size, VideoFrame* fram
     }
 }
 
-void    RtmpParser::parse_audio(uint8_t* buf, size_t size, AudioFrame* frame) {
+void    RtmpParser::parse_audio(const char* buf, size_t size, AudioFrame* frame) {
     char* temp = (char*)buf;
     int len = size;
     int aac_packet_type = 0;
@@ -233,6 +233,10 @@ void    RtmpParser::parse_audio(uint8_t* buf, size_t size, AudioFrame* frame) {
         frame->setChannels( m_audio_header.channels==0?1:2 );
         frame->assign(0, temp, len);
     }
+}
+
+bool    RtmpParser::is_video_sh() {
+    return (header.avc_packet_type==0);
 }
 
 int     RtmpParser::flv_sample_rate_2_somo(int flv_sample_rate) {

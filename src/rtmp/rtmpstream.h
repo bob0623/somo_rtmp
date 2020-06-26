@@ -7,6 +7,7 @@
 #define RTMP_SESSION_TYPE_PLAY      2
 
 class RtmpSession;
+class RtmpParser;
 class RtmpChunkStream;
 class RtmpConnection;
 class RtmpPublisher;
@@ -15,7 +16,6 @@ class RtmpMessage;
 class RtmpCommandPacket;
 class RtmpAudioPacket;
 class RtmpVideoPacket;
-class RtmpParser;
 class RtmpStream {
 public:
     RtmpStream(RtmpConnection* conn);
@@ -69,9 +69,4 @@ private:
     //for send buf
     char*           m_pSendBuf;
     int             m_nSendBufCapacity;
-
-    uint64_t        m_nAudioFrames;
-    uint64_t        m_nVideoFrames;
-
-
 };

@@ -33,3 +33,8 @@ void    RtmpConsumer::on_video(VideoFrame* frame) {
 void    RtmpConsumer::on_video_rtmp(const char* data, int len) {
     m_pStream->connection()->send(data, len);
 }
+
+void    RtmpConsumer::send(const char* data, int len) {
+    m_pStream->connection()->send(data, len);
+}
+
