@@ -25,7 +25,7 @@ PROCESS = somomcu
 
 all: $(PROCESS)
 
-OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logger.o $(OBJ_DIR)/buffer.o	\
+OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logger.o $(OBJ_DIR)/buffer.o	$(OBJ_DIR)/filewriter.o	\
 	$(OBJ_DIR)/session.o $(OBJ_DIR)/protocol.o $(OBJ_DIR)/connection.o $(OBJ_DIR)/rtmpprotocol.o 	\
 	$(OBJ_DIR)/videoframepool.o $(OBJ_DIR)/videoframe.o $(OBJ_DIR)/videospsparser.o \
 	$(OBJ_DIR)/audioframepool.o $(OBJ_DIR)/audioframe.o \
@@ -46,6 +46,9 @@ $(OBJ_DIR)/logger.o : $(SRC_COMMON_DIR)/logger.cpp $(SRC_COMMON_DIR)/logger.h
 
 $(OBJ_DIR)/buffer.o : $(SRC_COMMON_DIR)/buffer.cpp $(SRC_COMMON_DIR)/buffer.h
 	$(CC) -c $(FLAG) $(SRC_COMMON_DIR)/buffer.cpp -o $(OBJ_DIR)/buffer.o $(INC)
+
+$(OBJ_DIR)/filewriter.o : $(SRC_COMMON_DIR)/filewriter.cpp $(SRC_COMMON_DIR)/filewriter.h
+	$(CC) -c $(FLAG) $(SRC_COMMON_DIR)/filewriter.cpp -o $(OBJ_DIR)/filewriter.o $(INC)
 
 $(OBJ_DIR)/session.o : $(SRC_DIR)/session.cpp $(SRC_DIR)/session.h
 	$(CC) -c $(FLAG) $(SRC_DIR)/session.cpp -o $(OBJ_DIR)/session.o $(INC)

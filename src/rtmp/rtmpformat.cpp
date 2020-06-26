@@ -87,6 +87,12 @@ RtmpPacket*    RtmpPacketFactory::create_packet(uint32_t type) {
     return NULL;
 }
 
+RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, const char* data, int len) {
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VideoMessage, len, stamp, 0);
+    msg->add_payload(data, len);
+    return msg;
+}
+
 
 bool rtmp_is_valid_msg_type(int type) {
     switch(type) {

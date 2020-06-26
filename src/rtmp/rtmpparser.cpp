@@ -86,10 +86,6 @@ void    RtmpParser::parse_video_tag(const char* buf, size_t size, VideoFrame* fr
     }
 }
     
-void    RtmpParser::parse_video_avc_seq_header(const char* buf, size_t size) {
-    
-}
-    
 void    RtmpParser::parse_video_avc_packet(const char* buf, size_t size, VideoFrame* frame) {
     //FUNLOG(Info, "rtmp parse video tag, header.avc_packet_type = %d, size=%d", header.avc_packet_type, size);
     if( header.avc_packet_type == 0 ) {

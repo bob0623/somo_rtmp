@@ -42,7 +42,6 @@ public:
 
 public:
     void    parse_video_tag(const char* buf, size_t size, VideoFrame* frame);
-    void    parse_video_avc_seq_header(const char* buf, size_t size);
     void    parse_video_avc_packet(const char* buf, size_t size, VideoFrame* frame);
     void    parse_video_decoder_config(const char* buf, size_t size, VideoFrame* frame);
     void    parse_video_nalu(const char* buf, size_t size, VideoFrame* frame);

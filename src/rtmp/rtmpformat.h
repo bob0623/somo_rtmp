@@ -129,6 +129,11 @@ public:
     static RtmpPacket*    create_packet(uint32_t type);
 };
 
+class RtmpMessageFactory {
+public:
+    static RtmpMessage* create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, const char* data, int len);
+}
+
 bool rtmp_is_valid_msg_type(int type);
 bool rtmp_is_av_msg(int type);
 
@@ -170,9 +175,6 @@ public:
      */
     int     get_full_data(int fmt, int cid, char* data, int len);
 
-    // current payload length;
-    int     len() { return m_nLen; }
-
     // the message is ready
     int     ready() { return (m_nLen>=m_header.len); }
 
@@ -190,6 +192,12 @@ protected:
     RtmpPacket*     m_pPacket;
 };
 
+/**
+ * RtmpPacket is the payload of a RTMP Message, like:
+ *  RtmpCommandPacket: refer to the payload of RTMP Message AMF0 Command.
+ *  RtmpVideoPacket: refer to the payload of RTMP Message Video Tag.
+ * 
+ */
 class RtmpPacket {
 public:
     RtmpPacket();
