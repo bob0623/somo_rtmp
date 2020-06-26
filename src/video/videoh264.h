@@ -9,5 +9,7 @@
 #define     VIDEO_FRAME_B           2
 #define     VIDEO_FRAME_P           3
 
-
-
+struct NaluItem {
+    char*   data;
+    int     len;
+};

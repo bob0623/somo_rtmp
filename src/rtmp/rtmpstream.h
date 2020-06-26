@@ -7,7 +7,7 @@
 #define RTMP_SESSION_TYPE_PLAY      2
 
 class RtmpSession;
-class RtmpParser;
+class RtmpFlvParser;
 class RtmpChunkStream;
 class RtmpConnection;
 class RtmpPublisher;
@@ -57,7 +57,7 @@ private:
     RtmpConnection* m_pConnection;
     RtmpPublisher*  m_pPublisher;
     RtmpConsumer*   m_pConsumer;
-    RtmpParser*     m_pParser;
+    RtmpFlvParser*  m_pParser;
 
     int             m_nType;
     std::string     m_strApp;

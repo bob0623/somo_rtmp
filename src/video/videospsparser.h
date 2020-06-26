@@ -4,6 +4,7 @@
 typedef struct
 {
     unsigned int profile_idc;
+    unsigned int profile_compatibility;
     unsigned int level_idc;
     
     unsigned int width;

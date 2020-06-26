@@ -1,6 +1,8 @@
 #include "rtmpformat.h"
 #include "rtmpamf.h"
 
+#include "video/videoframe.h"
+
 #include "common/buffer.h"
 #include "common/logger.h"
 
@@ -87,9 +89,17 @@ RtmpPacket*    RtmpPacketFactory::create_packet(uint32_t type) {
     return NULL;
 }
 
-RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, const char* data, int len) {
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VideoMessage, len, stamp, 0);
-    msg->add_payload(data, len);
+RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, RtmpVideoPacket* packet) {
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VideoMessage, packet->len(), stamp, 0);
+    msg->add_payload(packet->data(), packet->len());
+    return msg;
+}
+
+//[TODO] not ready yet!
+RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, VideoFrame* frame) {
+    RtmpVideoPacket* packet = new RtmpVideoPacket( frame->data(), frame->size() );
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VideoMessage, packet->len(), frame->stamp(), 0);
+
     return msg;
 }
 

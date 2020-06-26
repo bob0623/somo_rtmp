@@ -1,7 +1,6 @@
 #include "rtmppublisher.h"
 #include "rtmpstream.h"
 #include "rtmpsession.h"
-#include "rtmpparser.h"
 #include "rtmpformat.h"
 
 #include "video/videoframe.h"
@@ -40,11 +39,6 @@ void    RtmpPublisher::on_audio(AudioFrame* frame) {
     
 }
 
-void    RtmpPublisher::on_video_sh(const char* data, int len) {
-    memcpy(m_pSeqHeader, data, len);
-    m_nSeqHeaderLen = len;
-}
-
 void    RtmpPublisher::on_video(VideoFrame* frame) {
     m_nVideoFrames++;
 
@@ -61,3 +55,9 @@ void    RtmpPublisher::on_video_rtmp(const char* data, int len) {
     }
     m_pStream->session()->on_video_rtmp(data, len);
 }
+
+void    RtmpPublisher::on_video_rtmp_sh(const char* data, int len) {
+    memcpy(m_pSeqHeader, data, len);
+    m_nSeqHeaderLen = len;
+}
+

@@ -100,6 +100,8 @@ class IOBuffer;
 class RtmpMessage;
 class RtmpCommandMsg;
 class RtmpPacket;
+class RtmpVideoPacket;
+class VideoFrame;
 class RtmpChunkStream {
 public:
     RtmpChunkStream(int cid);
@@ -131,8 +133,9 @@ public:
 
 class RtmpMessageFactory {
 public:
-    static RtmpMessage* create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, const char* data, int len);
-}
+    static RtmpMessage* create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, RtmpVideoPacket* packet);
+    static RtmpMessage* create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, VideoFrame* frame);
+};
 
 bool rtmp_is_valid_msg_type(int type);
 bool rtmp_is_av_msg(int type);
@@ -385,6 +388,10 @@ public:
 public:
     virtual void    decode(IOBuffer* buf);
     virtual int     encode(IOBuffer* buf);
+
+public:
+    char*   data() { return m_pBuf; }
+    int     len() { return m_nLen; }
 
 private:
     char*   m_pBuf;

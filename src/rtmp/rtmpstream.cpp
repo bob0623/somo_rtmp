@@ -1,11 +1,10 @@
 #include "rtmpstream.h"
-#include "rtmpparser.h"
 #include "rtmpformat.h"
 #include "rtmpconnection.h"
 #include "rtmppublisher.h"
 #include "rtmpconsumer.h"
 #include "rtmpsession.h"
-#include "rtmpparser.h"
+#include "rtmpflv.h"
 #include "rtmpbuffer.h"
 #include "rtmpamf.h"
 #include "app.h"
@@ -34,7 +33,7 @@ RtmpStream::RtmpStream(RtmpConnection* conn)
     m_nSendBufCapacity = 1024*128;
     m_pSendBuf = new char[ m_nSendBufCapacity];
 
-    m_pParser = new RtmpParser();
+    m_pParser = new RtmpFlvParser();
 }
 
 RtmpStream::~RtmpStream() {
@@ -176,7 +175,7 @@ void    RtmpStream::on_video(RtmpMessage* msg) {
     VideoFrame* frame = VideoFramePool::Ins()->get( msg->payload_len() );
     m_pParser->parse_video_tag( msg->payload(), msg->payload_len(), frame );
     if( m_pParser->is_video_sh() ) {
-        m_pPublisher->on_video_sh(m_pSendBuf, total_len);
+        m_pPublisher->on_video_rtmp_sh(m_pSendBuf, total_len);
     }
     VideoFramePool::Ins()->free( frame );
 
