@@ -48,6 +48,7 @@ RtmpMsgBuffer::RtmpMsgBuffer()
 RtmpMsgBuffer::~RtmpMsgBuffer() {
     if( m_pBuffer ) {
         delete m_pBuffer;
+        m_pBuffer = NULL;
     }
 
     for( auto it = m_arrChunks.begin(); it != m_arrChunks.end(); it++ ) {
@@ -195,6 +196,8 @@ void    RtmpBuffer::push(const char* data, int len) {
         if( count >= 100 ) 
             break;
     }
+
+    shuffer();
 }
 
 RtmpMsgBuffer*    RtmpBuffer::get_msg_buf() {
@@ -346,7 +349,7 @@ bool    RtmpBuffer::parse() {
     } else if( fmt == 2 ) {
         if( m_pCurMsg != NULL ) {
             FUNLOG(Info, "rtmp buffer parse, fmt==2, m_pCurMsg!=NULL, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, len);
-            delete m_pCurMsg;
+            //delete m_pCurMsg;
         }
 
         msg_len = m_nLastLen;
