@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * This file is copy from SRS(https://github.com/ossrs/srs)
+ * 
+ */
+
 #include <string>
 #include <vector>
 

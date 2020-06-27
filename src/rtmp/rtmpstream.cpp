@@ -50,7 +50,7 @@ RtmpStream::~RtmpStream() {
 
 void    RtmpStream::on_msg(RtmpMessage* msg) {
     switch( msg->type() ) {
-        case RTMP_MSG_SetChunkSize:
+        case RTMP_MSG_SET_CHUNK_SIZE:
         {
             RtmpSetChunkSizePacket* chunk_msg = (RtmpSetChunkSizePacket*)msg->packet();
             m_nChunkSizeIn = chunk_msg->chunk_size();
@@ -61,10 +61,10 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
         case RTMP_MSG_AMF0CommandMessage:   //20
             on_command( msg );
         break;
-        case RTMP_MSG_AudioMessage:
+        case RTMP_MSG_AUDIO:
             on_audio( msg );
             break;
-        case RTMP_MSG_VideoMessage:
+        case RTMP_MSG_VIDEO:
             on_video( msg );
             break;
     }
@@ -197,7 +197,7 @@ void    RtmpStream::ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t 
 }
 
 void    RtmpStream::ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth) {
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_SetPeerBandwidth, 5);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_SET_PEER_BANDWIDTH, 5);
     RtmpSetPeerBandwidthPacket* packet = (RtmpSetPeerBandwidthPacket*)msg->packet();
 
     if( packet == NULL ) {
@@ -212,7 +212,7 @@ void    RtmpStream::ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32
 }
 
 void    RtmpStream::ack_chunk_size(RtmpChunkStream* chunk_stream, uint32_t chunk_size) {
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_SetChunkSize, 4);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_SET_CHUNK_SIZE, 4);
     RtmpSetChunkSizePacket* packet = (RtmpSetChunkSizePacket*)msg->packet();
 
     if( packet == NULL ) {
@@ -377,7 +377,7 @@ void    RtmpStream::ack_play(RtmpChunkStream* chunk_stream, uint32_t tid) {
 }
 
 void    RtmpStream::ack_stream_begin(RtmpChunkStream* chunk_stream) {
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_UserControlMessage);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_USER_CTL);
     RtmpUserCtlPacket* packet = (RtmpUserCtlPacket*)msg->packet();
 
     if( packet == NULL ) {
@@ -393,7 +393,7 @@ void    RtmpStream::ack_stream_begin(RtmpChunkStream* chunk_stream) {
 }
 
 void    RtmpStream::ack_ping(RtmpChunkStream* chunk_stream, uint32_t data) {
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_UserControlMessage);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_USER_CTL);
     RtmpUserCtlPacket* packet = (RtmpUserCtlPacket*)msg->packet();
 
     if( packet == NULL ) {

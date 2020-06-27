@@ -20,22 +20,22 @@
 #define RTMP_AMF0_DATA_SAMPLE_ACCESS            "|RtmpSampleAccess"
 
 
-#define RTMP_MSG_SetChunkSize                   0x01
+#define RTMP_MSG_SET_CHUNK_SIZE                 0x01
 #define RTMP_MSG_AbortMessage                   0x02
 #define RTMP_MSG_Acknowledgement                0x03
-#define RTMP_MSG_UserControlMessage             0x04
+#define RTMP_MSG_USER_CTL                       0x04
 #define RTMP_MSG_WindowAcknowledgementSize      0x05
-#define RTMP_MSG_SetPeerBandwidth               0x06
+#define RTMP_MSG_SET_PEER_BANDWIDTH             0x06
 #define RTMP_MSG_EdgeAndOriginServerCommand     0x07
-#define RTMP_MSG_AMF3CommandMessage             17 // 0x11
-#define RTMP_MSG_AMF0CommandMessage             20 // 0x14
-#define RTMP_MSG_AMF0DataMessage                18 // 0x12
-#define RTMP_MSG_AMF3DataMessage                15 // 0x0F
-#define RTMP_MSG_AMF3SharedObject               16 // 0x10
-#define RTMP_MSG_AMF0SharedObject               19 // 0x13
-#define RTMP_MSG_AudioMessage                   8 // 0x08
-#define RTMP_MSG_VideoMessage                   9 // 0x09
-#define RTMP_MSG_AggregateMessage               22 // 0x16
+#define RTMP_MSG_AMF3CommandMessage             0x11
+#define RTMP_MSG_AMF0CommandMessage             0x14
+#define RTMP_MSG_AMF0DataMessage                0x12
+#define RTMP_MSG_AMF3DataMessage                0x0F
+#define RTMP_MSG_AMF3SharedObject               0x10
+#define RTMP_MSG_AMF0SharedObject               0x13
+#define RTMP_MSG_AUDIO                          0x08
+#define RTMP_MSG_VIDEO                          0x09
+#define RTMP_MSG_AggregateMessage               0x16 
 
 #define RTMP_USER_CTL_STREAM_BEGIN              0
 #define RTMP_USER_CTL_STREAM_EOF                1

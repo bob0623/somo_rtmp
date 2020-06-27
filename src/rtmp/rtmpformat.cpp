@@ -66,17 +66,17 @@ void    RtmpChunkStream::add_payload_fmt0(const char* data, int len) {
 RtmpPacket*    RtmpPacketFactory::create_packet(uint32_t type) {
     if( type == 0 ) {
         return new RtmpUnknownPacket();
-    } else if( type == RTMP_MSG_SetChunkSize ) {
+    } else if( type == RTMP_MSG_SET_CHUNK_SIZE ) {
         return new RtmpSetChunkSizePacket();
-    } else if( type == RTMP_MSG_UserControlMessage ) {
+    } else if( type == RTMP_MSG_USER_CTL ) {
         return new RtmpUserCtlPacket();
     } else if( type == RTMP_MSG_WindowAcknowledgementSize ) {
         return new RtmpWindowAckSizePacket();
-    } else if( type == RTMP_MSG_SetPeerBandwidth ) {
+    } else if( type == RTMP_MSG_SET_PEER_BANDWIDTH ) {
         return new RtmpSetPeerBandwidthPacket();
-    }  else if( type == RTMP_MSG_AudioMessage ) {
+    }  else if( type == RTMP_MSG_AUDIO ) {
         return new RtmpAudioPacket();
-    }  else if( type == RTMP_MSG_VideoMessage ) {
+    }  else if( type == RTMP_MSG_VIDEO ) {
         return new RtmpVideoPacket();
     } else if( type == RTMP_MSG_AMF0DataMessage ) {
         return new RtmpDataMessagePacket();
@@ -90,7 +90,7 @@ RtmpPacket*    RtmpPacketFactory::create_packet(uint32_t type) {
 }
 
 RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, RtmpVideoPacket* packet) {
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VideoMessage, packet->len(), stamp, 0);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VIDEO, packet->len(), stamp, 0);
     msg->add_payload(packet->data(), packet->len());
     return msg;
 }
@@ -98,7 +98,7 @@ RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_str
 //[TODO] not ready yet!
 RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_stream, uint32_t stamp, VideoFrame* frame) {
     RtmpVideoPacket* packet = new RtmpVideoPacket( frame->data(), frame->size() );
-    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VideoMessage, packet->len(), frame->stamp(), 0);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_VIDEO, packet->len(), frame->stamp(), 0);
 
     return msg;
 }
@@ -106,12 +106,12 @@ RtmpMessage* RtmpMessageFactory::create_video_message(RtmpChunkStream* chunk_str
 
 bool rtmp_is_valid_msg_type(int type) {
     switch(type) {
-        case RTMP_MSG_SetChunkSize:
-        case RTMP_MSG_UserControlMessage:
+        case RTMP_MSG_SET_CHUNK_SIZE:
+        case RTMP_MSG_USER_CTL:
         case RTMP_MSG_WindowAcknowledgementSize:
-        case RTMP_MSG_SetPeerBandwidth:
-        case RTMP_MSG_AudioMessage:
-        case RTMP_MSG_VideoMessage:
+        case RTMP_MSG_SET_PEER_BANDWIDTH:
+        case RTMP_MSG_AUDIO:
+        case RTMP_MSG_VIDEO:
         case RTMP_MSG_AMF0DataMessage:
         case RTMP_MSG_AMF0CommandMessage:
             return true;
@@ -123,7 +123,7 @@ bool rtmp_is_valid_msg_type(int type) {
 }
 
 bool rtmp_is_av_msg(int type) {
-    if( type == RTMP_MSG_AudioMessage || type == RTMP_MSG_VideoMessage )
+    if( type == RTMP_MSG_AUDIO || type == RTMP_MSG_VIDEO )
         return true;
     
     return false;
@@ -280,7 +280,7 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
     }
 
     //msg header:
-    if( m_header.type == RTMP_MSG_SetChunkSize ) {
+    if( m_header.type == RTMP_MSG_SET_CHUNK_SIZE ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
@@ -288,7 +288,7 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
 
         total_len += 11;
         header_len_pos += 3;
-    }  else if( m_header.type == RTMP_MSG_UserControlMessage ) {
+    }  else if( m_header.type == RTMP_MSG_USER_CTL ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
@@ -306,7 +306,7 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         total_len += 11;
         header_len_pos += 3;
 
-    } else if( m_header.type == RTMP_MSG_SetPeerBandwidth ) {
+    } else if( m_header.type == RTMP_MSG_SET_PEER_BANDWIDTH ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
@@ -315,7 +315,7 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         total_len += 11;
         header_len_pos += 3;
 
-    }  else if( m_header.type == RTMP_MSG_AudioMessage ) {
+    }  else if( m_header.type == RTMP_MSG_AUDIO ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
@@ -324,7 +324,7 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         total_len += 11;
         header_len_pos += 3;
 
-    }  else if( m_header.type == RTMP_MSG_VideoMessage ) {
+    }  else if( m_header.type == RTMP_MSG_VIDEO ) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);

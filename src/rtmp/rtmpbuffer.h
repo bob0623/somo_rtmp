@@ -6,9 +6,12 @@
 #include <vector>
 
 /**
- * RtmpBuffer: full data from Connection.on_data
- * RtmpChunkBuffer: data for a RTMP Chunk.
- * RtmpMsgBuffer: data for a RTMP Message.
+ * RtmpBuffer: parse data from Connection.on_data, and split into rtmp chunks and messages.
+ * Input: network data
+ * Output: rtmp message buffer (RtmpMsgBuffer).
+ * 
+ * RtmpChunkBuffer: buffer for a RTMP Chunk.
+ * RtmpMsgBuffer: buffer for a RTMP Message.
  * 
  * Real scenario:
  * int    RtmpConnection::on_data(const char* data, int len) {

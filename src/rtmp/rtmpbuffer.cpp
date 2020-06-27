@@ -186,7 +186,7 @@ void    RtmpBuffer::push(const char* data, int len) {
         //if we got SET_CHUNK_SIZE, break here:
         if( !m_arrChunks.empty() ) {
             RtmpMsgBuffer* msg_buf = *m_arrChunks.begin();
-            if( msg_buf->msg_type() == RTMP_MSG_SetChunkSize ) {
+            if( msg_buf->msg_type() == RTMP_MSG_SET_CHUNK_SIZE ) {
                 FUNLOG(Info, "rtmp buffer push, break parse for SET_CHUNK_SIZE, msg_type=%d", msg_buf->msg_type());
                 break;
             }
