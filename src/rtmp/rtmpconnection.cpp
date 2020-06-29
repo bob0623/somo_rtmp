@@ -10,23 +10,54 @@
 
 #define __CLASS__ "RtmpConnection"
 
+RtmpConnection::RtmpConnection(const std::string& ip, short port, ISNLinkHandler* handler)
+: Connection(ip, port, handler)
+, m_bClient(true)
+, m_bShakeHands(false)
+, m_pSHClient(NULL)
+, m_pSHServer(NULL)
+{
+    if( m_bClient ) {
+        m_pSHClient = new RtmpShakeHands_Client(this);
+    } else {
+        m_pSHServer = new RtmpShakeHands_Server(this);
+    }
+
+    //chunk stream 2&3:
+    m_mapStreams[2] = new RtmpChunkStream(2);
+    m_mapStreams[3] = new RtmpChunkStream(3);
+}
+
 RtmpConnection::RtmpConnection(ISNLink* link) 
 : Connection(link)
+, m_bClient(false)
 , m_bShakeHands(false)
+, m_pSHClient(NULL)
+, m_pSHServer(NULL)
 {
     m_nConnectStamp = Util::system_time_msec();
-    m_pShakeHands = new RtmpShakeHands(this);
+    if( m_bClient ) {
+        m_pSHClient = new RtmpShakeHands_Client(this);
+    } else {
+        m_pSHServer = new RtmpShakeHands_Server(this);
+    }
     m_pStream = new RtmpStream(this);
     m_pBuffer = new RtmpBuffer();
 }
 
 RtmpConnection::~RtmpConnection() {
-    delete m_pShakeHands;
+    if( m_pSHClient ) {
+        delete m_pSHClient;
+    }
+    if( m_pSHServer ) {
+        delete m_pSHServer;
+    }
     delete m_pStream;
     delete m_pBuffer;
 }
 
 int    RtmpConnection::on_data(const char* data, int len) {
+    //FUNLOG(Info, "rtmp connection on data, len=%d", len);
     if( !m_bShakeHands ) {
         int ret = shake_hands(data, len);
         if( ret == 0 ) {
@@ -55,10 +86,18 @@ Session* RtmpConnection::session() {
 }
 
 int     RtmpConnection::shake_hands(const char* data, int len) {
-    int ret = m_pShakeHands->on_data(data, len);
+    FUNLOG(Info, "rtmp connect shake hands start, len=%d", len);
+    int ret = 0;
+    if( m_bClient ) {
+        ret = m_pSHClient->on_data(data, len);
+        m_bShakeHands = m_pSHClient->done();
+    } else {
+        ret = m_pSHServer->on_data(data, len);
+        m_bShakeHands = m_pSHServer->done();
+    }
     if( ret == 0 )
         return 0;
-    m_bShakeHands = m_pShakeHands->done();
+
     if( m_bShakeHands ) {
         FUNLOG(Info, "rtmp connection shake hands done! linkid=%d", linkid());
     }

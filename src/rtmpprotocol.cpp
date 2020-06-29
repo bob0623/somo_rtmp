@@ -23,3 +23,8 @@ Session*    RtmpProtocol::create_session(const std::string& stream) {
 Connection* RtmpProtocol::create_connection(ISNLink* link) {
     return new RtmpConnection(link);
 }
+
+Connection* RtmpProtocol::create_connection(const std::string& ip, short port, ISNLinkHandler* handler) {
+    return new RtmpConnection(ip, port, handler);
+}
+

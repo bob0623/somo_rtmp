@@ -17,6 +17,7 @@ class RtmpCommandPacket;
 class RtmpAudioPacket;
 class RtmpVideoPacket;
 class RtmpStream {
+    friend class RtmpClient;
 public:
     RtmpStream(RtmpConnection* conn);
     ~RtmpStream();
@@ -38,6 +39,8 @@ private:
     void    on_video(RtmpMessage* msg);
 
 private:
+    void    send_connect(RtmpChunkStream* chunk_stream);
+    void    send_publish(RtmpChunkStream* chunk_stream);
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
     void    ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth);
     void    ack_chunk_size(RtmpChunkStream* chunk_stream, uint32_t chunk_size);

@@ -12,5 +12,5 @@ public:
     virtual Server*     create_server();
     virtual Session*    create_session(const std::string& stream);
     virtual Connection* create_connection(ISNLink* link);
-
+    virtual Connection* create_connection(const std::string& ip, short port, ISNLinkHandler* handler);
 };

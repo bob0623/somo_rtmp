@@ -15,12 +15,14 @@
 class RtmpStream;
 class RtmpBuffer;
 class RtmpMsgBuffer;
-class RtmpShakeHands;
+class RtmpShakeHands_Server;
+class RtmpShakeHands_Client;
 class RtmpChunkStream;
 class RtmpMessage;
 class RtmpChunkMsg;
 class RtmpConnection : public Connection {
 public:
+    RtmpConnection(const std::string& ip, short port, ISNLinkHandler* handler);
     RtmpConnection(ISNLink* link);
     ~RtmpConnection();
 
@@ -31,15 +33,18 @@ public:
 public:
     RtmpStream* stream() { return m_pStream; }
     RtmpBuffer* buffer() { return m_pBuffer; }
+    bool is_client() { return m_bClient; }
+    RtmpChunkStream*get_chunk_stream(int cid);
 
 private:
     int shake_hands(const char* data, int len);
     void handle_msg(RtmpMsgBuffer* msg_buf);
-    RtmpChunkStream*get_chunk_stream(int cid);
 
 private:
-    RtmpShakeHands*  m_pShakeHands;
+    RtmpShakeHands_Server*  m_pSHServer;
+    RtmpShakeHands_Client*  m_pSHClient;
     uint64_t    m_nConnectStamp;
+    bool        m_bClient;
     bool        m_bShakeHands;
     std::map<int, RtmpChunkStream*>    m_mapStreams;
     RtmpStream*m_pStream;

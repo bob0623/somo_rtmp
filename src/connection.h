@@ -1,10 +1,12 @@
 #pragma once
 
 #include <isnet.h>
+#include <string>
 
 class Session;
 class Connection {
 public:
+    Connection(const std::string& ip, short port, ISNLinkHandler* handler);
     Connection(ISNLink* link);
     ~Connection();
 

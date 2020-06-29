@@ -29,7 +29,7 @@ OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logge
 	$(OBJ_DIR)/session.o $(OBJ_DIR)/protocol.o $(OBJ_DIR)/connection.o $(OBJ_DIR)/rtmpprotocol.o 	\
 	$(OBJ_DIR)/videoframepool.o $(OBJ_DIR)/videoframe.o $(OBJ_DIR)/videospsparser.o $(OBJ_DIR)/videonaluparser.o \
 	$(OBJ_DIR)/audioframepool.o $(OBJ_DIR)/audioframe.o \
-	$(OBJ_DIR)/rtmpserver.o $(OBJ_DIR)/rtmpconnection.o $(OBJ_DIR)/rtmpsession.o $(OBJ_DIR)/rtmpstream.o $(OBJ_DIR)/rtmppublisher.o $(OBJ_DIR)/rtmpconsumer.o \
+	$(OBJ_DIR)/rtmpserver.o $(OBJ_DIR)/rtmpclient.o $(OBJ_DIR)/rtmpconnection.o $(OBJ_DIR)/rtmpsession.o $(OBJ_DIR)/rtmpstream.o $(OBJ_DIR)/rtmppublisher.o $(OBJ_DIR)/rtmpconsumer.o \
 	$(OBJ_DIR)/rtmpformat.o $(OBJ_DIR)/rtmpshakehands.o $(OBJ_DIR)/rtmpamf.o $(OBJ_DIR)/rtmpflv.o $(OBJ_DIR)/rtmpbuffer.o
 
 $(OBJ_DIR)/app.o : $(SRC_DIR)/app.cpp $(SRC_DIR)/app.h
@@ -85,6 +85,9 @@ $(OBJ_DIR)/audioframe.o : $(SRC_AUDIO_DIR)/audioframe.cpp $(SRC_AUDIO_DIR)/audio
 #rtmp folder
 $(OBJ_DIR)/rtmpserver.o : $(SRC_RTMP_DIR)/rtmpserver.cpp $(SRC_RTMP_DIR)/rtmpserver.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpserver.cpp -o $(OBJ_DIR)/rtmpserver.o $(INC)
+
+$(OBJ_DIR)/rtmpclient.o : $(SRC_RTMP_DIR)/rtmpclient.cpp $(SRC_RTMP_DIR)/rtmpclient.h
+	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpclient.cpp -o $(OBJ_DIR)/rtmpclient.o $(INC)
 
 $(OBJ_DIR)/rtmpconnection.o : $(SRC_RTMP_DIR)/rtmpconnection.cpp $(SRC_RTMP_DIR)/rtmpconnection.h
 	$(CC) -c $(FLAG) $(SRC_RTMP_DIR)/rtmpconnection.cpp -o $(OBJ_DIR)/rtmpconnection.o $(INC)
