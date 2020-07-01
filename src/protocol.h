@@ -19,8 +19,8 @@ public:
     virtual Server*     create_server() = 0;
     virtual Session*    create_session(const std::string& stream) = 0;
     virtual Connection* create_connection(ISNLink* link) = 0;
-    virtual Connection* create_connection(const std::string& ip, short port, const std::string& path, ISNLinkHandler* handler) = 0;
-    virtual Client*     create_client(const std::string& url) = 0;
+    virtual Connection* create_connection(const std::string& ip, short port, const std::string& path, bool player, ISNLinkHandler* handler) = 0;
+    virtual Client*     create_client(const std::string& url, bool player) = 0;
 
 public:
     int protocol() { return m_nProtocol; }

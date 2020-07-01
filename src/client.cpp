@@ -7,10 +7,11 @@
 
 #define __CLASS__   "Client"
 
-Client::Client(Protocol* protocol, const std::string& url)
+Client::Client(Protocol* protocol, const std::string& url, bool player)
 : m_pConnection(NULL)
 , m_pProtocol(protocol)
 , m_strUrl(url)
+, m_bPlayer(player)
 {
     connect();    
 }
@@ -62,7 +63,7 @@ void    Client::connect() {
 
     m_strIp = ip;
     m_nPort = port;
-    m_pConnection = m_pProtocol->create_connection(ip, port, m_strPath, this);
+    m_pConnection = m_pProtocol->create_connection(ip, port, m_strPath, m_bPlayer, this);
 }
 
 

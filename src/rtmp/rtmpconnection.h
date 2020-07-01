@@ -22,7 +22,7 @@ class RtmpMessage;
 class RtmpChunkMsg;
 class RtmpConnection : public Connection {
 public:
-    RtmpConnection(const std::string& ip, short port, const std::string& path, ISNLinkHandler* handler);
+    RtmpConnection(const std::string& ip, short port, const std::string& path, bool player, ISNLinkHandler* handler);
     RtmpConnection(ISNLink* link);
     ~RtmpConnection();
 
@@ -34,6 +34,7 @@ public:
     RtmpStream* stream() { return m_pStream; }
     RtmpBuffer* buffer() { return m_pBuffer; }
     bool is_client() { return m_bClient; }
+    bool is_player() { return m_bPlayer; }
     RtmpChunkStream*get_chunk_stream(int cid);
     std::string path() { return m_strRtmpPath; }
 
@@ -47,6 +48,7 @@ private:
     RtmpShakeHands_Client*  m_pSHClient;
     uint64_t    m_nConnectStamp;
     bool        m_bClient;
+    bool        m_bPlayer;
     bool        m_bShakeHands;
     std::map<int, RtmpChunkStream*>    m_mapStreams;
     RtmpStream*m_pStream;

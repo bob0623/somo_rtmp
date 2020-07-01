@@ -25,10 +25,10 @@ Connection* RtmpProtocol::create_connection(ISNLink* link) {
     return new RtmpConnection(link);
 }
 
-Connection* RtmpProtocol::create_connection(const std::string& ip, short port, const std::string& path, ISNLinkHandler* handler) {
-    return new RtmpConnection(ip, port, path, handler);
+Connection* RtmpProtocol::create_connection(const std::string& ip, short port, const std::string& path, bool player, ISNLinkHandler* handler) {
+    return new RtmpConnection(ip, port, path, player, handler);
 }
 
-Client*     RtmpProtocol::create_client(const std::string& url) {
-    return new RtmpClient(this, url);
+Client*     RtmpProtocol::create_client(const std::string& url, bool player) {
+    return new RtmpClient(this, url, player);
 }

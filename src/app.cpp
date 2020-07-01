@@ -111,8 +111,8 @@ void    App::clear_sessions() {
     m_mapSessions.clear();
 }
 
-void    App::add_client(const std::string& url) {
-    FUNLOG(Info, "app add client, url=%s", url.c_str());
+void    App::add_client(const std::string& url, bool player) {
+    FUNLOG(Info, "app add client, url=%s, is_player=%s", url.c_str(), player?"yes":"no");
     int proto = protocol_parse_url(url);
     Protocol* protocol = get_protocol(proto);
     if( protocol == NULL ) {
@@ -120,7 +120,7 @@ void    App::add_client(const std::string& url) {
         return;
     }
 
-    Client* client = protocol->create_client(url);
+    Client* client = protocol->create_client(url, player);
     m_mapClients[url] = client;
 }
 

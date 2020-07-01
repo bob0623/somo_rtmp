@@ -163,15 +163,25 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
             m_pSession->add_consumer(m_pConsumer);
         }
     } else if( packet->name() == RTMP_AMF0_COMMAND_RESULT ) {
+        //[yunzed] this command only exist when I'm a RTMP client.
         FUNLOG(Info, "rtmp session command result, status=%d, tid=%d", m_nStatus, packet->result_packet()->tid);
-        if( m_nStatus == RTMP_SESSION_STATUS_CONNECTING && m_nConnectTid == packet->result_packet()->tid ) {
-            send_release_stream(msg->chunk_stream());
-        } else if( m_nStatus == RTMP_SESSION_STATUS_RELEASE_STREAM && m_nReleaseStreamTid == packet->result_packet()->tid ) {
-            send_fcpublish(msg->chunk_stream());
-            send_create_stream(msg->chunk_stream());
-        } else if( m_nStatus == RTMP_SESSION_STATUS_CREATE_STREAM && m_nCreateStreamTid == packet->result_packet()->tid ) {
-            //send_publish(msg->chunk_stream());
-            send_publish(msg->chunk_stream());
+        if( !m_pConnection->is_client()) {
+            FUNLOG(Error, "rtmp session command result only exist as client mode, is_client=%s", m_pConnection->is_client()?"yes":"no");
+            return;
+        }
+        if( m_pConnection->is_player() ) {
+            //in player mode, send "PLAY" command.
+        } else {
+            //othersize, send "FCPublish&publish"
+            if( m_nStatus == RTMP_SESSION_STATUS_CONNECTING && m_nConnectTid == packet->result_packet()->tid ) {
+                send_release_stream(msg->chunk_stream());
+            } else if( m_nStatus == RTMP_SESSION_STATUS_RELEASE_STREAM && m_nReleaseStreamTid == packet->result_packet()->tid ) {
+                send_fcpublish(msg->chunk_stream());
+                send_create_stream(msg->chunk_stream());
+            } else if( m_nStatus == RTMP_SESSION_STATUS_CREATE_STREAM && m_nCreateStreamTid == packet->result_packet()->tid ) {
+                //send_publish(msg->chunk_stream());
+                send_publish(msg->chunk_stream());
+            }
         }
     } else if( packet->name() == RTMP_AMF0_COMMAND_ON_STATUS ) {
         FUNLOG(Info, "rtmp session command onstatus, status=%d, code=%d", m_nStatus, packet->onstatus_packet()->code);

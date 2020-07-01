@@ -12,7 +12,7 @@ class RtmpShakeHands_Client;
 class RtmpConnection;
 class RtmpClient : public Client {
 public:
-    RtmpClient(Protocol* protocol, const std::string& url);
+    RtmpClient(Protocol* protocol, const std::string& url, bool player);
     ~RtmpClient();
 
 public:

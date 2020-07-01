@@ -8,7 +8,12 @@ class Protocol;
 class Connection;
 class Client : public ISNLinkHandler {
 public:
-    Client(Protocol* protocol, const std::string& url);
+    /**
+     * A client must be specified as player or not.
+     * For Rtmp, player means send PLAY command, otherwise send FCPublish&publish command to server.
+     * 
+     */
+    Client(Protocol* protocol, const std::string& url, bool player);
     ~Client();
 
 public:
@@ -22,6 +27,7 @@ public:
     std::string     ip() { return m_strIp; }
     short   port() { return m_nPort; }
     std::string     path() { return m_strPath; }
+    bool            is_player() { return m_bPlayer; }
 
 private:
     void    connect();
@@ -32,6 +38,7 @@ protected:
     std::string     m_strIp;
     short           m_nPort;
     std::string     m_strPath;
+    bool            m_bPlayer;
     Connection*     m_pConnection;
 };
 

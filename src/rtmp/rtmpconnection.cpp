@@ -10,9 +10,10 @@
 
 #define __CLASS__ "RtmpConnection"
 
-RtmpConnection::RtmpConnection(const std::string& ip, short port, const std::string& path, ISNLinkHandler* handler)
+RtmpConnection::RtmpConnection(const std::string& ip, short port, const std::string& path, bool player,ISNLinkHandler* handler)
 : Connection(ip, port, handler)
 , m_bClient(true)
+, m_bPlayer(player)
 , m_bShakeHands(false)
 , m_pSHClient(NULL)
 , m_pSHServer(NULL)

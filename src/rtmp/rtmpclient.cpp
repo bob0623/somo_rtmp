@@ -9,10 +9,10 @@
 
 #define __CLASS__   "RtmpClient"
 
-RtmpClient::RtmpClient(Protocol* protocol, const std::string& url)
-: Client(protocol, url)
+RtmpClient::RtmpClient(Protocol* protocol, const std::string& url, bool player)
+: Client(protocol, url, player)
 { 
-    FUNLOG(Info, "rtmp client new, url=%s", url.c_str());
+    FUNLOG(Info, "rtmp client new, url=%s, is_player=%s", url.c_str(), player?"yes":"no");
 }
 
 RtmpClient::~RtmpClient() {
