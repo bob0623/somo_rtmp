@@ -33,12 +33,8 @@ public:
     RtmpConsumer*   consumer() { return m_pConsumer; }
     uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
 
-private:
-    void    on_command(RtmpMessage* msg);
-    void    on_audio(RtmpMessage* msg);
-    void    on_video(RtmpMessage* msg);
-
-private:
+public:
+    void    send_set_chunk_size(RtmpChunkStream* chunk_stream);
     void    send_connect(RtmpChunkStream* chunk_stream);
     void    send_publish(RtmpChunkStream* chunk_stream);
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
@@ -56,6 +52,11 @@ private:
     void    ack_ping(RtmpChunkStream* chunk_stream, uint32_t data);
 
 private:
+    void    on_command(RtmpMessage* msg);
+    void    on_audio(RtmpMessage* msg);
+    void    on_video(RtmpMessage* msg);
+
+private:
     RtmpSession*    m_pSession;
     RtmpConnection* m_pConnection;
     RtmpPublisher*  m_pPublisher;
@@ -68,6 +69,7 @@ private:
     std::string     m_strStream;
     uint32_t        m_nChunkSizeIn;
     uint32_t        m_nChunkSizeOut;
+    uint32_t        m_nTid;
 
     //for send buf
     char*           m_pSendBuf;

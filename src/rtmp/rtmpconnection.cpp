@@ -10,18 +10,23 @@
 
 #define __CLASS__ "RtmpConnection"
 
-RtmpConnection::RtmpConnection(const std::string& ip, short port, ISNLinkHandler* handler)
+RtmpConnection::RtmpConnection(const std::string& ip, short port, const std::string& path, ISNLinkHandler* handler)
 : Connection(ip, port, handler)
 , m_bClient(true)
 , m_bShakeHands(false)
 , m_pSHClient(NULL)
 , m_pSHServer(NULL)
+, m_strRtmpPath(path)
 {
+    FUNLOG(Info, "rtmp connection new, ip=%s, port=%d", ip.c_str(), port);
     if( m_bClient ) {
         m_pSHClient = new RtmpShakeHands_Client(this);
     } else {
         m_pSHServer = new RtmpShakeHands_Server(this);
     }
+
+    m_pStream = new RtmpStream(this);
+    m_pBuffer = new RtmpBuffer();
 
     //chunk stream 2&3:
     m_mapStreams[2] = new RtmpChunkStream(2);
@@ -43,6 +48,10 @@ RtmpConnection::RtmpConnection(ISNLink* link)
     }
     m_pStream = new RtmpStream(this);
     m_pBuffer = new RtmpBuffer();
+
+    //chunk stream 2&3:
+    m_mapStreams[2] = new RtmpChunkStream(2);
+    m_mapStreams[3] = new RtmpChunkStream(3);
 }
 
 RtmpConnection::~RtmpConnection() {
@@ -85,22 +94,37 @@ Session* RtmpConnection::session() {
     return m_pStream->session();
 }
 
+void RtmpConnection::start_shake_hands() {
+    FUNLOG(Info, "rtmp connection start client shake hands!", NULL);
+    if( m_bClient ) {
+        m_pSHClient->start();
+    }
+}
+
 int     RtmpConnection::shake_hands(const char* data, int len) {
-    FUNLOG(Info, "rtmp connect shake hands start, len=%d", len);
+    FUNLOG(Info, "rtmp connect shake hands start, client=%d, len=%d", m_bClient?1:0, len);
     int ret = 0;
     if( m_bClient ) {
+        FUNLOG(Info, "rtmp connect client shake hands start, len=%d", len);
         ret = m_pSHClient->on_data(data, len);
         m_bShakeHands = m_pSHClient->done();
+
+        //for client connection, SET_CHUNK_SIZE+CONNECT
+        if( m_bShakeHands ) {
+            FUNLOG(Info, "rtmp connection client shake hands done! linkid=%d", linkid());
+            m_pStream->send_set_chunk_size( get_chunk_stream(2) );
+            m_pStream->send_connect( get_chunk_stream(3) );
+        }
     } else {
+        FUNLOG(Info, "rtmp connect server shake hands start, len=%d", len);
         ret = m_pSHServer->on_data(data, len);
         m_bShakeHands = m_pSHServer->done();
+        if( m_bShakeHands ) {
+            FUNLOG(Info, "rtmp connection server shake hands done! linkid=%d", linkid());
+        }
     }
     if( ret == 0 )
         return 0;
-
-    if( m_bShakeHands ) {
-        FUNLOG(Info, "rtmp connection shake hands done! linkid=%d", linkid());
-    }
 
     return ret;
 }
@@ -127,8 +151,10 @@ void     RtmpConnection::handle_msg(RtmpMsgBuffer* msg_buf) {
 
 RtmpChunkStream*    RtmpConnection::get_chunk_stream(int cid) {
     auto it = m_mapStreams.find(cid);
-    if( it == m_mapStreams.end() ) 
+    if( it == m_mapStreams.end() ) {
+        FUNLOG(Error, "rtmp connection get chunk stream failed! cid=%d", cid);
         return NULL;
+    }
 
     return it->second;
 }

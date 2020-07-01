@@ -29,11 +29,22 @@ RtmpStream::RtmpStream(RtmpConnection* conn)
 , m_pPublisher(NULL)
 , m_pConsumer(NULL)
 , m_nType(RTMP_SESSION_TYPE_UNKNOWN)
+, m_nTid(1)
 {
     m_nSendBufCapacity = 1024*128;
     m_pSendBuf = new char[ m_nSendBufCapacity];
 
     m_pParser = new RtmpFlvParser();
+
+    //for client, parse the app&stream from url
+    if( conn->is_client() ) {
+        std::string path = conn->path();
+        int pos = path.find("/");
+        if( pos != -1 ) {
+            m_strApp = path.substr(0, pos);
+            m_strStream = path.substr(pos+1);
+        }
+    }
 }
 
 RtmpStream::~RtmpStream() {
@@ -72,7 +83,6 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
 
 void    RtmpStream::send_msg(RtmpMessage* msg) {
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack window size, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
@@ -151,6 +161,8 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         } else {
             m_pSession->add_consumer(m_pConsumer);
         }
+    } else if( packet->name() == RTMP_AMF0_COMMAND_RESULT ) {
+        FUNLOG(Info, "rtmp session command result, tid=%d", packet->result_packet()->tid);
     }
 }
 
@@ -181,8 +193,23 @@ void    RtmpStream::on_video(RtmpMessage* msg) {
 
 }
 
+void    RtmpStream::send_set_chunk_size(RtmpChunkStream* chunk_stream) {
+    FUNLOG(Info, "rtmp stream send set chunk size! app=%s, stream=%s, chunk_size=%d", m_strApp.c_str(), m_strStream.c_str(), m_nChunkSizeOut);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_SET_CHUNK_SIZE, 4);
+    RtmpSetChunkSizePacket* packet = (RtmpSetChunkSizePacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session set chunk size, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+    packet->set_chunk_size(m_nChunkSizeOut);
+
+    int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
+    FUNLOG(Info, "rtmp session set chunk size, total_len=%d", total_len);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
 void    RtmpStream::send_connect(RtmpChunkStream* chunk_stream) {
-    FUNLOG(Info, "rtmp stream send connect command! app=%s, stream=%s", m_strApp.c_str(), m_strStream.c_str());
+    FUNLOG(Info, "rtmp stream send connect command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
@@ -190,18 +217,16 @@ void    RtmpStream::send_connect(RtmpChunkStream* chunk_stream) {
         return;
     }
     packet->set_name("connect");
-    packet->add_amf0_object( RtmpAmf0Any::number(1) );
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nTid++) );
     
     RtmpAmf0Object* obj1 = RtmpAmf0Any::object();
     obj1->set("app", RtmpAmf0Any::str(m_strApp.c_str()));
+    obj1->set("type", RtmpAmf0Any::str("nonprivate"));
     obj1->set("flashVer", RtmpAmf0Any::str("LUX 9,0,124,2"));
-    obj1->set("fpad", RtmpAmf0Any::boolean(false));
 
-    obj1->set("capabilities", RtmpAmf0Any::number(15));
-    obj1->set("audioCodecs", RtmpAmf0Any::number(4071));
-    obj1->set("videoCodecs", RtmpAmf0Any::number(252));
-    obj1->set("videoFunction", RtmpAmf0Any::number(1));
-
+    std::string url = "rtmp://127.0.0.1/" + m_pConnection->path();
+    obj1->set("swfUrl", RtmpAmf0Any::str(url.c_str()));
+    obj1->set("tcUrl", RtmpAmf0Any::str( url.c_str() ));
     packet->add_amf0_object(obj1);
 
     //send the data:
@@ -211,7 +236,7 @@ void    RtmpStream::send_connect(RtmpChunkStream* chunk_stream) {
 }
 
 void    RtmpStream::send_publish(RtmpChunkStream* chunk_stream) {
-    FUNLOG(Info, "rtmp stream send publish command! app=%s, stream=%s", m_strApp.c_str(), m_strStream.c_str());
+    FUNLOG(Info, "rtmp stream send publish command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
@@ -219,7 +244,7 @@ void    RtmpStream::send_publish(RtmpChunkStream* chunk_stream) {
         return;
     }
     packet->set_name("publish");
-    packet->add_amf0_object( RtmpAmf0Any::number(5) );
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nTid++) );
     packet->add_amf0_object( RtmpAmf0Any::null());
     packet->add_amf0_object( RtmpAmf0Any::str(m_strStream.c_str()));
     packet->add_amf0_object( RtmpAmf0Any::str("live"));

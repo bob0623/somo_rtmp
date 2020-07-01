@@ -15,6 +15,7 @@
  */
 class Protocol;
 class Server;
+class Client;
 class Session;
 class App : public Singleton<App>{
 public:
@@ -35,8 +36,11 @@ public:
     Session* get_session(const std::string& stream);
     void    clear_sessions();
 
+    void    add_client(const std::string& url);
+
 private:
     std::map<int, Protocol*>  m_mapProtocols;
     std::map<short, Server*>  m_mapServers;
-    std::map<std::string, Session*>    m_mapSessions;
+    std::map<std::string, Session*>     m_mapSessions;
+    std::map<std::string, Client*>      m_mapClients;
 };

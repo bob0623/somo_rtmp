@@ -1,8 +1,12 @@
 #include "util.h"
 
+#include "common/logger.h"
+
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
+
+#define __CLASS__   "Util"
 
 void Util::generate_random(char* bytes, int size)
 {
@@ -36,13 +40,18 @@ std::string Util::get_url_protocol(const std::string& url) {
 std::string Util::get_url_domain(const std::string& url) {
     std::string url_left = url;
     int pos = url_left.find_first_of("://");
-    if( pos == -1 )
+    if( pos == -1 ) {
+        FUNLOG(Error, "util get url domain failed, find prfix failed! url=%s", url.c_str());
         return "";
-    
-    url_left = url_left.substr(pos+2);
+    }
+    url_left = url_left.substr(pos+3);
+    //FUNLOG(Info, "util get url domain, url=%s, no_prefix=%s", url.c_str(), url_left.c_str());
+
     pos = url_left.find_first_of("/");
-    if( pos == -1 )
+    if( pos == -1 ) {
+        FUNLOG(Error, "util get url domain failed, find / failed! url=%s", url.c_str());
         return "";
+    }
     
     return url_left.substr(0, pos);
 }
@@ -53,7 +62,7 @@ std::string Util::get_url_path(const std::string& url) {
     if( pos == -1 )
         return "";
     
-    url_left = url_left.substr(pos+2);
+    url_left = url_left.substr(pos+3);
     pos = url_left.find_first_of("/");
     if( pos == -1 )
         return "";

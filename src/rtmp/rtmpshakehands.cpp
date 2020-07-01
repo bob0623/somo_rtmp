@@ -30,7 +30,7 @@ RtmpShakeHands_Server::~RtmpShakeHands_Server()
 int  RtmpShakeHands_Server::on_data(const char* data, int len) {
     if( !m_bReadC0C1 ) {
         if( len >= 1537 ) {
-            FUNLOG(Info, "rtmp shake hands, get C0&C1, len=%d, b[0]=%d", len, data[0]);
+            FUNLOG(Info, "rtmp shake hands server, get C0&C1, len=%d, b[0]=%d", len, data[0]);
             m_bReadC0C1 = true;
             read_c0c1(data, len);
             create_s0s1s2();
@@ -38,20 +38,20 @@ int  RtmpShakeHands_Server::on_data(const char* data, int len) {
 
             return 1537;
         } else {
-            FUNLOG(Error, "rtmp shake hands, C0&C1 lens!=1537, len=%d", len);
+            FUNLOG(Error, "rtmp shake hands server, C0&C1 lens!=1537, len=%d", len);
             return 0;
         }
     } else if( !m_bReadC2 ) {
-        FUNLOG(Info, "rtmp shake hands, get C2, len=%d", len);
+        FUNLOG(Info, "rtmp shake hands server, get C2, len=%d", len);
         if( len >= 1536 ) {
             m_bReadC2 = true;
             return 1536;
         } else {
-            FUNLOG(Error, "rtmp shake hands, C2 lens!=1536, len=%d", len);
+            FUNLOG(Error, "rtmp shake hands server, C2 lens!=1536, len=%d", len);
             return 0;
         }
     } else {
-        FUNLOG(Error, "rtmp shake hands failed, already read C0&C1&C2, len=%d", len);
+        FUNLOG(Error, "rtmp shake hands server failed, already read C0&C1&C2, len=%d", len);
         return 0;
     }
 }
@@ -145,12 +145,13 @@ void    RtmpShakeHands_Client::start() {
 
 int  RtmpShakeHands_Client::on_data(const char* data, int len) {
     if( len >= 3073 ) {
-        FUNLOG(Info, "rtmp shake hands, get S0S1S2, len=%d, b[0]=%d", len, data[0]);
+        FUNLOG(Info, "rtmp shake hands client, get S0S1S2, len=%d, b[0]=%d", len, data[0]);
+        m_bReadS0S1S2 = true;
         create_c2();
         m_pRtmpConn->send(m_pC2, 1537);
         return 3073;
     } else {
-        FUNLOG(Error, "rtmp shake hands, C0&C1 lens!=1537, len=%d", len);
+        FUNLOG(Error, "rtmp shake hands client, C0&C1 lens!=1537, len=%d", len);
         return 0;
     }
 }

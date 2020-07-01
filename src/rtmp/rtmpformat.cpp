@@ -679,6 +679,15 @@ void    RtmpCommandPacket::decode(IOBuffer* buf) {
         m_pPlayParams->stream = stream;
         m_pPlayParams->start = start;
         m_pPlayParams->duration = duration;
+    }  else if( m_strName == RTMP_AMF0_COMMAND_RESULT ) {
+        double tid = 0;
+
+        rtmp_amf0_read_number(buf, tid);
+        rtmp_amf0_read_null(buf);
+        rtmp_amf0_read_undefined(buf);
+
+        m_pResultParams = new RtmpResultParams();
+        m_pResultParams->tid = (uint32_t)tid;
     } else {
         FUNLOG(Info, "rtmp unknown msg, m_strName=%s", m_strName.c_str());
     }

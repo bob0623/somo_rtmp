@@ -147,6 +147,7 @@ public:
 private:
     bool    parse();
     void    shuffer();
+    bool    has_set_chunk_size_msg();
 
 public:
     char*   m_pBuffer;

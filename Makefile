@@ -25,7 +25,7 @@ PROCESS = somomcu
 
 all: $(PROCESS)
 
-OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logger.o $(OBJ_DIR)/buffer.o	$(OBJ_DIR)/filewriter.o	\
+OBJECT = $(OBJ_DIR)/app.o $(OBJ_DIR)/server.o $(OBJ_DIR)/client.o $(OBJ_DIR)/util.o $(OBJ_DIR)/logger.o $(OBJ_DIR)/buffer.o	$(OBJ_DIR)/filewriter.o	\
 	$(OBJ_DIR)/session.o $(OBJ_DIR)/protocol.o $(OBJ_DIR)/connection.o $(OBJ_DIR)/rtmpprotocol.o 	\
 	$(OBJ_DIR)/videoframepool.o $(OBJ_DIR)/videoframe.o $(OBJ_DIR)/videospsparser.o $(OBJ_DIR)/videonaluparser.o \
 	$(OBJ_DIR)/audioframepool.o $(OBJ_DIR)/audioframe.o \
@@ -37,6 +37,9 @@ $(OBJ_DIR)/app.o : $(SRC_DIR)/app.cpp $(SRC_DIR)/app.h
 
 $(OBJ_DIR)/server.o : $(SRC_DIR)/server.cpp $(SRC_DIR)/server.h
 	$(CC) -c $(FLAG) $(SRC_DIR)/server.cpp -o $(OBJ_DIR)/server.o $(INC)
+
+$(OBJ_DIR)/client.o : $(SRC_DIR)/client.cpp $(SRC_DIR)/client.h
+	$(CC) -c $(FLAG) $(SRC_DIR)/client.cpp -o $(OBJ_DIR)/client.o $(INC)
 
 $(OBJ_DIR)/util.o : $(SRC_COMMON_DIR)/util.cpp $(SRC_COMMON_DIR)/util.h
 	$(CC) -c $(FLAG) $(SRC_COMMON_DIR)/util.cpp -o $(OBJ_DIR)/util.o $(INC)
