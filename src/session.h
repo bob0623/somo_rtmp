@@ -8,6 +8,7 @@
 class Consumer;
 class Publisher;
 class Session;
+class Client;
 
 class VideoFrame;
 class AudioFrame;
@@ -63,6 +64,9 @@ public:
     void    add_consumer(Consumer* consumer);
     void    remove_consumer(uint32_t id);
     Consumer*   get_consumer(uint32_t id);
+    Client* add_forwarder(const std::string& url, Client* client);
+    void    remove_forwarder(const std::string& url);
+    Client* get_forwarder(const std::string& url);
 
 public:
     Publisher*  publisher() { return m_pPublisher; }
@@ -81,6 +85,7 @@ private:
     std::string m_strStream;
     Publisher*  m_pPublisher;
     std::map<uint32_t, Consumer*>   m_mapConsumers;
+    std::map<std::string, Client*>  m_mapForwarders;
 };
 
 

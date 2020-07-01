@@ -100,6 +100,10 @@ struct RtmpResultParams {
     uint32_t        tid;
 };
 
+struct RtmpOnStatusParams {
+    uint32_t        code;
+};
+
 class IOBuffer;
 class RtmpMessage;
 class RtmpCommandMsg;
@@ -353,6 +357,7 @@ public:
     RtmpPublishParams*  publish_packet() { return m_pPublishParams; }
     RtmpPlayParams*     play_packet() { return m_pPlayParams; }
     RtmpResultParams*   result_packet() { return m_pResultParams; }
+    RtmpOnStatusParams* onstatus_packet() { return m_pOnStatusParams; }
 
 private:
     std::string     get_amf_prop(RtmpAmf0Object* obj, const std::string& prop);
@@ -366,6 +371,7 @@ private:
     RtmpPublishParams*          m_pPublishParams;
     RtmpPlayParams*             m_pPlayParams;
     RtmpResultParams*           m_pResultParams;
+    RtmpOnStatusParams*         m_pOnStatusParams;
 
     std::vector<RtmpAmf0Any*>    m_arrAmfObjs;
 };

@@ -30,6 +30,7 @@ RtmpStream::RtmpStream(RtmpConnection* conn)
 , m_pConsumer(NULL)
 , m_nType(RTMP_SESSION_TYPE_UNKNOWN)
 , m_nTid(1)
+, m_nStatus(RTMP_SESSION_STATUS_INIT)
 {
     m_nSendBufCapacity = 1024*128;
     m_pSendBuf = new char[ m_nSendBufCapacity];
@@ -162,7 +163,19 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
             m_pSession->add_consumer(m_pConsumer);
         }
     } else if( packet->name() == RTMP_AMF0_COMMAND_RESULT ) {
-        FUNLOG(Info, "rtmp session command result, tid=%d", packet->result_packet()->tid);
+        FUNLOG(Info, "rtmp session command result, status=%d, tid=%d", m_nStatus, packet->result_packet()->tid);
+        if( m_nStatus == RTMP_SESSION_STATUS_CONNECTING && m_nConnectTid == packet->result_packet()->tid ) {
+            send_release_stream(msg->chunk_stream());
+        } else if( m_nStatus == RTMP_SESSION_STATUS_RELEASE_STREAM && m_nReleaseStreamTid == packet->result_packet()->tid ) {
+            send_fcpublish(msg->chunk_stream());
+            send_create_stream(msg->chunk_stream());
+        } else if( m_nStatus == RTMP_SESSION_STATUS_CREATE_STREAM && m_nCreateStreamTid == packet->result_packet()->tid ) {
+            //send_publish(msg->chunk_stream());
+            send_publish(msg->chunk_stream());
+        }
+    } else if( packet->name() == RTMP_AMF0_COMMAND_ON_STATUS ) {
+        FUNLOG(Info, "rtmp session command onstatus, status=%d, code=%d", m_nStatus, packet->onstatus_packet()->code);
+        m_nStatus = RTMP_SESSION_STATUS_READY;
     }
 }
 
@@ -216,8 +229,11 @@ void    RtmpStream::send_connect(RtmpChunkStream* chunk_stream) {
         FUNLOG(Error, "rtmp session connect, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
+    m_nConnectTid = m_nTid++;
+    m_nStatus = RTMP_SESSION_STATUS_CONNECTING;
+
     packet->set_name("connect");
-    packet->add_amf0_object( RtmpAmf0Any::number(m_nTid++) );
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nConnectTid) );
     
     RtmpAmf0Object* obj1 = RtmpAmf0Any::object();
     obj1->set("app", RtmpAmf0Any::str(m_strApp.c_str()));
@@ -235,6 +251,29 @@ void    RtmpStream::send_connect(RtmpChunkStream* chunk_stream) {
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
+void    RtmpStream::send_fcpublish(RtmpChunkStream* chunk_stream) {
+    FUNLOG(Info, "rtmp stream send fcpublish command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
+    RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session fcpublish, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+
+    m_nFCPublishTid = m_nTid++;
+    m_nStatus = RTMP_SESSION_STATUS_PUBLISHING;
+
+    packet->set_name("FCPublish");
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nFCPublishTid) );
+    packet->add_amf0_object( RtmpAmf0Any::null());
+    packet->add_amf0_object( RtmpAmf0Any::str(m_strStream.c_str()));
+
+    //send the data:
+    memset(m_pSendBuf, 0, m_nSendBufCapacity);
+    int total_len = msg->get_full_data(1, 3, m_pSendBuf, m_nSendBufCapacity);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
 void    RtmpStream::send_publish(RtmpChunkStream* chunk_stream) {
     FUNLOG(Info, "rtmp stream send publish command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
@@ -243,6 +282,7 @@ void    RtmpStream::send_publish(RtmpChunkStream* chunk_stream) {
         FUNLOG(Error, "rtmp session publish, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
+
     packet->set_name("publish");
     packet->add_amf0_object( RtmpAmf0Any::number(m_nTid++) );
     packet->add_amf0_object( RtmpAmf0Any::null());
@@ -252,6 +292,51 @@ void    RtmpStream::send_publish(RtmpChunkStream* chunk_stream) {
     //send the data:
     memset(m_pSendBuf, 0, m_nSendBufCapacity);
     int total_len = msg->get_full_data(0, 4, m_pSendBuf, m_nSendBufCapacity);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
+void    RtmpStream::send_create_stream(RtmpChunkStream* chunk_stream) {
+    FUNLOG(Info, "rtmp stream send create_stream command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
+    RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session create_stream, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+
+    m_nCreateStreamTid = m_nTid++;
+    m_nStatus = RTMP_SESSION_STATUS_CREATE_STREAM;
+
+    packet->set_name("createStream");
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nCreateStreamTid) );
+    packet->add_amf0_object( RtmpAmf0Any::null());
+
+    //send the data:
+    memset(m_pSendBuf, 0, m_nSendBufCapacity);
+    int total_len = msg->get_full_data(1, 3, m_pSendBuf, m_nSendBufCapacity);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
+void    RtmpStream::send_release_stream(RtmpChunkStream* chunk_stream) {
+    FUNLOG(Info, "rtmp stream send release_stream command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
+    RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp session release_stream, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+
+    m_nReleaseStreamTid = m_nTid++;
+    m_nStatus = RTMP_SESSION_STATUS_RELEASE_STREAM;
+
+    packet->set_name("releaseStream");
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nReleaseStreamTid) );
+    packet->add_amf0_object( RtmpAmf0Any::null());
+    packet->add_amf0_object( RtmpAmf0Any::str(m_strStream.c_str()));
+
+    //send the data:
+    memset(m_pSendBuf, 0, m_nSendBufCapacity);
+    int total_len = msg->get_full_data(1, 3, m_pSendBuf, m_nSendBufCapacity);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 

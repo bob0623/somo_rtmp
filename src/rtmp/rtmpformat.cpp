@@ -345,9 +345,15 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
-        buf.write_4bytes(m_header.id);
 
-        total_len += 11;
+        if( fmt == 0 ) {
+            buf.write_4bytes(m_header.id);
+            total_len += 11;
+        } else {
+            total_len += 7;
+        }
+
+        
         header_len_pos += 3;
     } else {
         FUNLOG(Error, "rtmp basic msg get full data, invalid msg type=%d", m_header.type);
@@ -688,6 +694,14 @@ void    RtmpCommandPacket::decode(IOBuffer* buf) {
 
         m_pResultParams = new RtmpResultParams();
         m_pResultParams->tid = (uint32_t)tid;
+    } else if( m_strName == RTMP_AMF0_COMMAND_ON_STATUS ) {
+        double code = 0;
+
+        rtmp_amf0_read_number(buf, code);
+        rtmp_amf0_read_null(buf);
+
+        m_pOnStatusParams = new RtmpOnStatusParams();
+        m_pOnStatusParams->code = (uint32_t)code;
     } else {
         FUNLOG(Info, "rtmp unknown msg, m_strName=%s", m_strName.c_str());
     }

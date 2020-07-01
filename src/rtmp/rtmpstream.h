@@ -2,9 +2,18 @@
 
 #include <string>
 
-#define RTMP_SESSION_TYPE_UNKNOWN   0
-#define RTMP_SESSION_TYPE_PUBLISH   1
-#define RTMP_SESSION_TYPE_PLAY      2
+#define RTMP_SESSION_TYPE_UNKNOWN       0
+#define RTMP_SESSION_TYPE_PUBLISH       1
+#define RTMP_SESSION_TYPE_PLAY          2
+
+#define RTMP_SESSION_STATUS_INIT        0
+#define RTMP_SESSION_STATUS_CONNECTING  1
+#define RTMP_SESSION_STATUS_PUBLISHING  2
+#define RTMP_SESSION_STATUS_PLAYING     3
+#define RTMP_SESSION_STATUS_CREATE_STREAM  4
+#define RTMP_SESSION_STATUS_RELEASE_STREAM  5
+#define RTMP_SESSION_STATUS_READY       10
+
 
 class RtmpSession;
 class RtmpFlvParser;
@@ -36,7 +45,11 @@ public:
 public:
     void    send_set_chunk_size(RtmpChunkStream* chunk_stream);
     void    send_connect(RtmpChunkStream* chunk_stream);
+    void    send_fcpublish(RtmpChunkStream* chunk_stream);
     void    send_publish(RtmpChunkStream* chunk_stream);
+    void    send_create_stream(RtmpChunkStream* chunk_stream);
+    void    send_release_stream(RtmpChunkStream* chunk_stream);
+
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
     void    ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth);
     void    ack_chunk_size(RtmpChunkStream* chunk_stream, uint32_t chunk_size);
@@ -69,7 +82,14 @@ private:
     std::string     m_strStream;
     uint32_t        m_nChunkSizeIn;
     uint32_t        m_nChunkSizeOut;
+
+    //runtime:
+    uint32_t        m_nStatus;
     uint32_t        m_nTid;
+    uint32_t        m_nConnectTid;
+    uint32_t        m_nFCPublishTid;
+    uint32_t        m_nCreateStreamTid;
+    uint32_t        m_nReleaseStreamTid;
 
     //for send buf
     char*           m_pSendBuf;

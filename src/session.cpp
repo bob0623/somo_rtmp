@@ -1,5 +1,6 @@
 #include "session.h"
 #include "connection.h"
+#include "client.h"
 
 #include "common/logger.h"
 
@@ -55,6 +56,36 @@ void    Session::remove_consumer(uint32_t id) {
 Consumer*   Session::get_consumer(uint32_t id) {
     auto it = m_mapConsumers.find(id);
     if( it == m_mapConsumers.end() ) {
+        return NULL;
+    }
+
+    return it->second;
+}
+
+Client* Session::add_forwarder(const std::string& url, Client* client) {
+    Client* old = get_forwarder(url);
+    if( old != NULL ) {
+        FUNLOG(Error, "session add forwarder failed, already exist for url=%s", url.c_str());
+        return old;
+    }
+
+    m_mapForwarders[url] = client;
+}
+
+void    Session::remove_forwarder(const std::string& url) {
+    auto it = m_mapForwarders.find(url);
+    if( it == m_mapForwarders.end() ) {
+        FUNLOG(Error, "session get forwarder failed, not exist for url=%s", url.c_str());
+        return;
+    }
+    delete it->second;
+    m_mapForwarders.erase(it);
+}
+
+Client* Session::get_forwarder(const std::string& url) {
+    auto it = m_mapForwarders.find(url);
+    if( it == m_mapForwarders.end() ) {
+        FUNLOG(Error, "session get forwarder failed, not exist for url=%s", url.c_str());
         return NULL;
     }
 
