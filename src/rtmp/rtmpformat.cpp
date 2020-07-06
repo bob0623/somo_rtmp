@@ -557,8 +557,17 @@ void    RtmpSetPeerBandwidthPacket::set_peer_bandwidth(uint32_t bw) {
 
 
 //onMetaData
-RtmpDataMessagePacket::RtmpDataMessagePacket() {
+RtmpDataMessagePacket::RtmpDataMessagePacket() 
+: m_pBuf(NULL)
+, m_nLen(0)
+{
 
+}
+
+RtmpDataMessagePacket::RtmpDataMessagePacket(const char* data, int len) {
+    FUNLOG(Info, "rtmp data message, meta len=%d", len);
+    memcpy(m_pBuf, data, len);
+    m_nLen = len;
 }
 
 RtmpDataMessagePacket::~RtmpDataMessagePacket() {
@@ -566,6 +575,20 @@ RtmpDataMessagePacket::~RtmpDataMessagePacket() {
 }
 
 void    RtmpDataMessagePacket::decode(IOBuffer* buf) {
+    //backup, because new consumer need this:
+    int pos = buf->pos();
+    int size = buf->left();
+    if( size == 0 )
+        return;
+
+    if( m_pBuf == NULL ) {
+        m_pBuf = new char[size];
+    }
+    buf->read_bytes(m_pBuf, size);
+    m_nLen = size;
+    buf->repos(pos);
+
+    //decode the content:
     std::string strAtName;
     std::string strName;
 
@@ -579,12 +602,60 @@ void    RtmpDataMessagePacket::decode(IOBuffer* buf) {
     m_nFileSize = (uint32_t)array->ensure_property_number("fileSize")->to_number();
     m_nVideoWidth = (uint32_t)array->ensure_property_number("width")->to_number();
     m_nVideoHeight = (uint32_t)array->ensure_property_number("height")->to_number();
+    m_nVideoDataRate = (uint32_t)array->ensure_property_number("videodatarate")->to_number();
+    m_nVideoFps = (uint32_t)array->ensure_property_number("framerate")->to_number();
+
+    m_nAudioDataRate = (uint32_t)array->ensure_property_number("audiodatarate")->to_number();
+    m_nAudioSampleRate = (uint32_t)array->ensure_property_number("audiosamplerate")->to_number();
+    m_nAudioSampleSize = (uint32_t)array->ensure_property_number("audiosamplesize")->to_number();
+    m_nAudioChannels = (uint32_t)array->ensure_property_number("audiochannels")->to_number();
 
     FUNLOG(Info, "rtmp data packet, width=%d, height=%d", m_nVideoWidth, m_nVideoHeight);
 }
    
-int     RtmpDataMessagePacket::encode(IOBuffer* buf) {
-    return 0;
+int     RtmpDataMessagePacket::encode(IOBuffer* buf) {   
+    if( m_pBuf != NULL && m_nLen > 0) {
+        buf->write_bytes(m_pBuf, m_nLen);
+        return m_nLen;
+    } 
+
+    int size = buf->pos();
+    rtmp_amf0_write_string(buf, "@setDataFrame");
+    rtmp_amf0_write_string(buf, "onMetaData");
+    
+    RtmpAmf0EcmaArray* array = RtmpAmf0Any::ecma_array();
+    array->set("duration", RtmpAmf0Any::number(0) );
+    array->set("fileSize", RtmpAmf0Any::number(0) );
+
+    //video
+    array->set("width", RtmpAmf0Any::number(m_nVideoWidth) );
+    array->set("height", RtmpAmf0Any::number(m_nVideoHeight) );
+    array->set("videocodecid", RtmpAmf0Any::str("avc1") );
+    array->set("videodatarate", RtmpAmf0Any::number(m_nVideoDataRate) );
+    array->set("framerate", RtmpAmf0Any::number(m_nVideoFps) );
+
+    //audio
+    array->set("audiocodecid", RtmpAmf0Any::str("mp4a") );
+    array->set("audiodatarate", RtmpAmf0Any::number(m_nAudioDataRate) );
+    array->set("audiosamplerate", RtmpAmf0Any::number(m_nAudioSampleRate) );
+    array->set("audiosamplesize", RtmpAmf0Any::number(m_nAudioSampleSize) );
+    array->set("audiochannels", RtmpAmf0Any::number(m_nAudioChannels) );
+    array->set("stereo", RtmpAmf0Any::boolean( (m_nAudioChannels==2) ) );
+
+    //profiles:
+    array->set("2.1", RtmpAmf0Any::boolean(false) );
+    array->set("3.1", RtmpAmf0Any::boolean(false) );
+    array->set("4.0", RtmpAmf0Any::boolean(false) );
+    array->set("4.1", RtmpAmf0Any::boolean(false) );
+    array->set("5.1", RtmpAmf0Any::boolean(false) );
+    array->set("7.1", RtmpAmf0Any::boolean(false) );
+
+    //encoder:
+    array->set("encoder", RtmpAmf0Any::str("somo_server_mcu(0.0.1") );
+
+    array->write(buf);
+
+    return buf->pos()-size;
 }
 
 

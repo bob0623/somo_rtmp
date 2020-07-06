@@ -21,6 +21,10 @@ public:
     virtual void on_close(ISNLink* pLink);
     virtual int  on_data(const char* data, size_t len, ISNLink* pLink);
 
+    virtual void    on_meta_data(const char* data, int len) = 0;
+    virtual void    on_video_rtmp(const char* data, int len) = 0;
+    virtual void    on_video_rtmp_sh(const char* data, int len) = 0;
+
 public:
     Connection*     connection() { return m_pConnection; }
     std::string     url() { return m_strUrl; }

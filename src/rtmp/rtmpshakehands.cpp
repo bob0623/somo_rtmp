@@ -56,6 +56,23 @@ int  RtmpShakeHands_Server::on_data(const char* data, int len) {
     }
 }
 
+void RtmpShakeHands_Server::clear() {
+    if( m_pC0C1 ) {
+        delete m_pC0C1;
+        m_pC0C1 = NULL;
+    }
+    if( m_pS0S1S2 ) {
+        delete m_pS0S1S2;
+        m_pS0S1S2 = NULL;
+    }
+    if( m_pC2 ) {
+        delete m_pC2;
+        m_pC2 = NULL;
+    }
+    m_bReadC0C1 = false;
+    m_bReadC2 = false;
+}
+
 bool RtmpShakeHands_Server::done() {
     return m_bReadC0C1&&m_bReadC2;
 }
@@ -139,6 +156,7 @@ RtmpShakeHands_Client::~RtmpShakeHands_Client()
 }
 
 void    RtmpShakeHands_Client::start() {
+    FUNLOG(Info, "rtmp shake hands client start", NULL);
     create_c0c1();
     m_pRtmpConn->send(m_pC0C1, 1537);
 }
@@ -160,8 +178,26 @@ bool RtmpShakeHands_Client::done() {
     return m_bReadS0S1S2;
 }
 
+void RtmpShakeHands_Client::clear() {
+    FUNLOG(Info, "rtmp shake hands client clear", NULL);
+    if( m_pC0C1 ) {
+        delete m_pC0C1;
+        m_pC0C1 = NULL;
+    }
+    if( m_pS0S1S2 ) {
+        delete m_pS0S1S2;
+        m_pS0S1S2 = NULL;
+    }
+    if( m_pC2 ) {
+        delete m_pC2;
+        m_pC2 = NULL;
+    }
+    m_bReadS0S1S2 = false;
+}
+
 bool RtmpShakeHands_Client::create_c0c1() {
     if( m_pC0C1 ) {
+        FUNLOG(Error, "rtmp shake hands client create c0c1 failed! m_pC0C1!=NULL.", NULL);
         return true;
     }
 
@@ -178,6 +214,7 @@ bool RtmpShakeHands_Client::create_c0c1() {
 
 bool RtmpShakeHands_Client::create_c2() {
     if (m_pC2) {
+        FUNLOG(Error, "rtmp shake hands client create m_pC2 failed! m_pC2!=NULL.", NULL);
         return false;
     }
     

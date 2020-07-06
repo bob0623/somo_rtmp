@@ -36,7 +36,9 @@ public:
     Session* get_session(const std::string& stream);
     void    clear_sessions();
 
-    void    add_client(const std::string& url, bool player);
+    Client* add_client(const std::string& url, bool player);
+    Client* add_forwarder(const std::string& url);
+    void    clear_forwarders();
 
 private:
     std::map<int, Protocol*>  m_mapProtocols;

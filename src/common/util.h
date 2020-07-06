@@ -12,5 +12,7 @@ public:
     static std::string get_url_protocol(const std::string& url);
     static std::string get_url_domain(const std::string& url);
     static std::string get_url_path(const std::string& url);
+    static std::string get_url_rtmp_app(const std::string& url);
+    static std::string get_url_rtmp_stream(const std::string& url);
     static std::string get_host_ip(const char* hostname);
 };

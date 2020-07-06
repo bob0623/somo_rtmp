@@ -28,6 +28,7 @@ public:
 
 public:
     virtual int on_data(const char* data, int len);
+    virtual void clear();
     virtual Session* session();
 
 public:

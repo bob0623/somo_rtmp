@@ -12,6 +12,7 @@ public:
 
 public:
     int     on_data(const char* data, int len);
+    void    clear();
     bool    done();
 
 private:
@@ -38,6 +39,7 @@ public:
 public:
     void    start();
     int     on_data(const char* data, int len);
+    void    clear();
     bool    done();
 
 private:

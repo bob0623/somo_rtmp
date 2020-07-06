@@ -16,14 +16,18 @@
 
 RtmpPublisher::RtmpPublisher(RtmpStream* stream)
 : m_pStream(stream) 
+, m_nSeqHeaderLen(0)
+, m_nMetaLen(0)
 , m_nAudioFrames(0)
 , m_nVideoFrames(0)
 {
     m_pSeqHeader = new char[1024];
+    m_pMeta = new char[1024];
 }
 
 RtmpPublisher::~RtmpPublisher() {
     delete m_pSeqHeader;
+    delete m_pMeta;
 }
 
 uint32_t  RtmpPublisher::id() {
@@ -37,6 +41,14 @@ uint32_t  RtmpPublisher::id() {
 void    RtmpPublisher::on_new_consumer(Consumer* consumer) {
     FUNLOG(Info, "rtmp publisher on new consumer, consumer_id=%d", consumer->id());
     consumer->on_video_rtmp_sh( m_pSeqHeader, m_nSeqHeaderLen );
+    consumer->on_meta_data( m_pSeqHeader, m_nSeqHeaderLen );
+}
+
+void    RtmpPublisher::on_meta_data(const char* data, int len) {
+    memcpy(m_pMeta, data, len);
+    m_nMetaLen = len;
+
+    m_pStream->session()->on_meta_data(data, len);
 }
 
 void    RtmpPublisher::on_audio(AudioFrame* frame) {

@@ -34,6 +34,7 @@ public:
 public:
     void    on_msg(RtmpMessage* msg);
     void    send_msg(RtmpMessage* msg);
+    void    clear();
     bool    is_publisher();
     bool    is_consumer();
     RtmpSession*    session() { return m_pSession; }
@@ -49,7 +50,7 @@ public:
     void    send_publish(RtmpChunkStream* chunk_stream);
     void    send_create_stream(RtmpChunkStream* chunk_stream);
     void    send_release_stream(RtmpChunkStream* chunk_stream);
-
+    
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
     void    ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth);
     void    ack_chunk_size(RtmpChunkStream* chunk_stream, uint32_t chunk_size);
@@ -66,6 +67,7 @@ public:
 
 private:
     void    on_command(RtmpMessage* msg);
+    void    on_meta_data(RtmpMessage* msg);
     void    on_audio(RtmpMessage* msg);
     void    on_video(RtmpMessage* msg);
 

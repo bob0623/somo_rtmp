@@ -310,6 +310,7 @@ private:
 class RtmpDataMessagePacket : public RtmpPacket {
 public:
     RtmpDataMessagePacket();
+    RtmpDataMessagePacket(const char* data, int len);
     ~RtmpDataMessagePacket();
 
 public:
@@ -320,6 +321,9 @@ public:
 
 
 private:
+    char*       m_pBuf;
+    int         m_nLen;
+
     uint32_t    m_nDuration;
     uint32_t    m_nFileSize;
     uint32_t    m_nVideoWidth;

@@ -22,6 +22,10 @@ uint32_t    RtmpConsumer::id() {
     return m_nId;
 }
 
+void    RtmpConsumer::on_meta_data(const char* data, int len) {
+    m_pStream->connection()->send(data, len);
+}
+
 void    RtmpConsumer::on_audio(AudioFrame* frame) {
 
 }

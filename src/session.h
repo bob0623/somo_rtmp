@@ -21,6 +21,11 @@ public:
     virtual void    on_new_consumer(Consumer* consumer) = 0;
 
 
+    /**
+     * callback when @setDataFrame comes.
+     */
+    virtual void    on_meta_data(const char* data, int len) = 0;
+
     virtual void    on_audio(AudioFrame* frame) = 0;
 
     /**
@@ -46,6 +51,7 @@ public:
 class Consumer {
 public:
     virtual uint32_t  id() = 0;
+    virtual void    on_meta_data(const char* data, int len) = 0;
     virtual void    on_audio(AudioFrame* frame) = 0;
     virtual void    on_audio_rtmp(const char* data, int len) = 0;
     virtual void    on_video(VideoFrame* frame) = 0;
@@ -64,6 +70,7 @@ public:
     void    add_consumer(Consumer* consumer);
     void    remove_consumer(uint32_t id);
     Consumer*   get_consumer(uint32_t id);
+    
     Client* add_forwarder(const std::string& url, Client* client);
     void    remove_forwarder(const std::string& url);
     Client* get_forwarder(const std::string& url);
@@ -72,6 +79,7 @@ public:
     Publisher*  publisher() { return m_pPublisher; }
 
 public:
+    void    on_meta_data(const char* data, int len);
     void    on_audio();
     void    on_audio_rtmp(const char* data, int len);
 

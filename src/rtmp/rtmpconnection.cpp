@@ -91,6 +91,17 @@ int    RtmpConnection::on_data(const char* data, int len) {
     return len;
 }
 
+void RtmpConnection::clear() {
+    m_pStream->clear();
+    m_bShakeHands = false;
+    if( m_pSHClient != NULL ) {
+        m_pSHClient->clear();
+    }
+    if( m_pSHServer != NULL ) {
+        m_pSHServer->clear();
+    }
+}
+
 Session* RtmpConnection::session() {
     return m_pStream->session();
 }

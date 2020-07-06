@@ -70,6 +70,9 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
             m_pConnection->buffer()->set_chunk_size(m_nChunkSizeIn);
         }
         break;
+        case RTMP_MSG_AMF0DataMessage:
+            on_meta_data(msg);
+        break;
         case RTMP_MSG_AMF0CommandMessage:   //20
             on_command( msg );
         break;
@@ -85,6 +88,12 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
 void    RtmpStream::send_msg(RtmpMessage* msg) {
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
     m_pConnection->send(m_pSendBuf, total_len);
+}
+
+void    RtmpStream::clear() {
+    m_nType = RTMP_SESSION_TYPE_UNKNOWN;
+    m_nTid = 1;
+    m_nStatus = RTMP_SESSION_STATUS_INIT;
 }
 
 bool    RtmpStream::is_publisher() {
@@ -189,13 +198,16 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
     }
 }
 
+void    RtmpStream::on_meta_data(RtmpMessage* msg) {
+    int total_len = msg->get_full_data(1, msg->chunk_stream()->cid(), m_pSendBuf, m_nSendBufCapacity);
+    FUNLOG(Info, "rtmp stream on meta, total_len=%d", total_len);
+    m_pPublisher->on_meta_data( m_pSendBuf, total_len );
+}
 
 void    RtmpStream::on_audio(RtmpMessage* msg) {
     if( m_nType != RTMP_SESSION_TYPE_PUBLISH ) {
         return;
     }
-
-    
 }
 
 void    RtmpStream::on_video(RtmpMessage* msg) {

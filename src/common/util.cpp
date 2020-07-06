@@ -72,6 +72,26 @@ std::string Util::get_url_path(const std::string& url) {
     return url_left;
 }
 
+std::string Util::get_url_rtmp_app(const std::string& url) {
+    std::string path = get_url_path(url);
+    int pos = path.find("/");
+    if( pos == -1 ) {
+        return "";
+    }
+
+    return path.substr(0, pos);
+}
+    
+std::string Util::get_url_rtmp_stream(const std::string& url) {
+    std::string path = get_url_path(url);
+    int pos = path.find("/");
+    if( pos == -1 ) {
+        return "";
+    }
+
+    return path.substr(pos+1);
+}
+
 std::string Util::get_host_ip(const char* hostname)
 {
     struct hostent *host = gethostbyname(hostname);

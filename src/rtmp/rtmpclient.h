@@ -17,9 +17,16 @@ public:
 
 public:
     virtual void on_connected(ISNLink* pLink);
+    virtual void on_close(ISNLink* pLink);
+
+public:
+    virtual void    on_meta_data(const char* data, int len);
+    virtual void    on_video_rtmp(const char* data, int len);
+    virtual void    on_video_rtmp_sh(const char* data, int len);
 
 protected:
     std::string     m_strApp;
     std::string     m_strStream;
+    uint32_t        m_nVideoFrames;
 };
 

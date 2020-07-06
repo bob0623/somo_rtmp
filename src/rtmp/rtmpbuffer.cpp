@@ -162,7 +162,7 @@ void    RtmpBuffer::set_chunk_size(uint32_t chunk_size) {
 }
 
 void    RtmpBuffer::push(const char* data, int len) {
-    FUNLOG(Info, "rtmp buffer push, len=%d", len);
+    //FUNLOG(Info, "rtmp buffer push, len=%d", len);
     if( m_nPos + m_nLen + len > m_nCapacity ) {
         //buffe not large enough, extend it
         if( m_nCapacity >= RTMP_BUFFER_MAX ) {
@@ -315,7 +315,7 @@ bool    RtmpBuffer::parse() {
         chunk_header_len += 4;
     }
 
-    FUNLOG(Info, "rtmp buffer parse, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, msg_type=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, msg_type, len);
+    //FUNLOG(Info, "rtmp buffer parse, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, msg_type=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, msg_type, len);
     if( fmt == 0 || fmt == 1 ) {
         if( m_pCurMsg != NULL ) {
             FUNLOG(Info, "rtmp buffer parse, fmt==0||fmt==1, m_pCurMsg!=NULL, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, len);
