@@ -4,8 +4,8 @@ LIB3RD = ./3rd
 
 CC = g++
 INC = -I include -I src -I $(BASENET_INC)
-STDLIB = -lz -lcrypto -lrt -lpthread -ldl
-LIB = $(BASENET_LIB)/libnetbase.a $(LIB3RD)/libuv/lib/libuv.a
+STDLIB = -lz -lrt -lpthread -ldl
+LIB = $(BASENET_LIB)/libnetbase.a $(LIB3RD)/libuv/lib/libuv.a /usr/local/ssl/lib/libcrypto.a
 
 BUILD_TIME = `date "+%Y-%m-%d_%H:%M:%S"`
 
