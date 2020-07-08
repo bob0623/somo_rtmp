@@ -5,6 +5,7 @@
 #include "rtmpprotocol.h"
 
 #include "common/logger.h"
+#include "common/util.h"
 
 #define __CLASS__   "App"
 
@@ -109,4 +110,52 @@ void    App::clear_sessions() {
         }
     }
     m_mapSessions.clear();
+}
+
+Client*    App::add_client(const std::string& url, bool player) {
+    FUNLOG(Info, "app add client, url=%s, is_player=%s", url.c_str(), player?"yes":"no");
+    int proto = protocol_parse_url(url);
+    Protocol* protocol = get_protocol(proto);
+    if( protocol == NULL ) {
+        FUNLOG(Error, "app add client failed, protocol==NULL for url=%s", url.c_str());
+        return NULL;
+    }
+
+    Client* client = protocol->create_client(url, player);
+    m_mapClients[url] = client;
+
+    return client;
+}
+
+Client* App::add_forwarder(const std::string& url) {
+    FUNLOG(Info, "app add forwarder, url=%s", url.c_str());
+    int proto = protocol_parse_url(url);
+    Protocol* protocol = get_protocol(proto);
+    if( protocol == NULL ) {
+        FUNLOG(Error, "app add forwarder failed, protocol==NULL for url=%s", url.c_str());
+        return NULL;
+    }
+
+    std::string stream = Util::get_url_rtmp_stream(url);
+    if( stream.empty() ) {
+        FUNLOG(Error, "app add forwarder failed, stream==empty, url=%s", url.c_str());
+        return NULL;
+    }
+
+    //create the client:
+    Client* client = protocol->create_client(url, false);
+    m_mapClients[url] = client;
+
+    //get the session:
+    Session* session = get_session(stream);
+    if( session == NULL ) {
+        session = add_session(stream, proto);
+    }
+    session->add_forwarder(url, client);
+
+    return client;
+}
+
+void    App::clear_forwarders() {
+    
 }

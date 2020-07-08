@@ -96,6 +96,14 @@ struct RtmpPlayParams {
     double          duration;
 };
 
+struct RtmpResultParams {
+    uint32_t        tid;
+};
+
+struct RtmpOnStatusParams {
+    uint32_t        code;
+};
+
 class IOBuffer;
 class RtmpMessage;
 class RtmpCommandMsg;
@@ -302,6 +310,7 @@ private:
 class RtmpDataMessagePacket : public RtmpPacket {
 public:
     RtmpDataMessagePacket();
+    RtmpDataMessagePacket(const char* data, int len);
     ~RtmpDataMessagePacket();
 
 public:
@@ -312,6 +321,9 @@ public:
 
 
 private:
+    char*       m_pBuf;
+    int         m_nLen;
+
     uint32_t    m_nDuration;
     uint32_t    m_nFileSize;
     uint32_t    m_nVideoWidth;
@@ -348,6 +360,8 @@ public:
     RtmpCreateStreamParams* create_stream_packet() { return m_pCreateStreamParams; }
     RtmpPublishParams*  publish_packet() { return m_pPublishParams; }
     RtmpPlayParams*     play_packet() { return m_pPlayParams; }
+    RtmpResultParams*   result_packet() { return m_pResultParams; }
+    RtmpOnStatusParams* onstatus_packet() { return m_pOnStatusParams; }
 
 private:
     std::string     get_amf_prop(RtmpAmf0Object* obj, const std::string& prop);
@@ -360,6 +374,8 @@ private:
     RtmpCreateStreamParams*     m_pCreateStreamParams;
     RtmpPublishParams*          m_pPublishParams;
     RtmpPlayParams*             m_pPlayParams;
+    RtmpResultParams*           m_pResultParams;
+    RtmpOnStatusParams*         m_pOnStatusParams;
 
     std::vector<RtmpAmf0Any*>    m_arrAmfObjs;
 };

@@ -1,15 +1,29 @@
 #pragma once
 
 #include <isnet.h>
+#include <string>
 
 class Session;
 class Connection {
 public:
+    Connection(const std::string& ip, short port, ISNLinkHandler* handler);
     Connection(ISNLink* link);
     ~Connection();
 
 public:
+    /**
+     * to handle protocol data
+     */
     virtual int    on_data(const char* data, int len) = 0;
+
+    /**
+     * when connection error happends, clear the scenario and re-connect!
+     */
+    virtual void   clear() = 0;
+
+    /**
+     * return RtmpSession for RTMP protocol
+     */
     virtual Session*    session() = 0;
 
 public:

@@ -17,6 +17,8 @@ public:
 
 public:
     virtual uint32_t  id();
+
+    virtual void    on_meta_data(const char* data, int len);
     
     virtual void    on_audio(AudioFrame* frame);
     virtual void    on_audio_rtmp(const char* data, int len);

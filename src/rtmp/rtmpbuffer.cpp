@@ -162,6 +162,7 @@ void    RtmpBuffer::set_chunk_size(uint32_t chunk_size) {
 }
 
 void    RtmpBuffer::push(const char* data, int len) {
+    //FUNLOG(Info, "rtmp buffer push, len=%d", len);
     if( m_nPos + m_nLen + len > m_nCapacity ) {
         //buffe not large enough, extend it
         if( m_nCapacity >= RTMP_BUFFER_MAX ) {
@@ -184,13 +185,11 @@ void    RtmpBuffer::push(const char* data, int len) {
     while( parse() ) {
         count++;
         //if we got SET_CHUNK_SIZE, break here:
-        if( !m_arrChunks.empty() ) {
-            RtmpMsgBuffer* msg_buf = *m_arrChunks.begin();
-            if( msg_buf->msg_type() == RTMP_MSG_SET_CHUNK_SIZE ) {
-                FUNLOG(Info, "rtmp buffer push, break parse for SET_CHUNK_SIZE, msg_type=%d", msg_buf->msg_type());
+        //if we got SET_CHUNK_SIZE, break here:
+            if( has_set_chunk_size_msg() ) {
+                FUNLOG(Info, "rtmp buffer push, break parse for SET_CHUNK_SIZE, msg.count=%d", m_arrChunks.size());
                 break;
             }
-        }
 
         //in case infinit loop:
         if( count >= 100 ) 
@@ -206,6 +205,12 @@ RtmpMsgBuffer*    RtmpBuffer::get_msg_buf() {
         int count = 0;
         while( parse() ) {
             count++;
+
+            //if we got SET_CHUNK_SIZE, break here:
+            if( has_set_chunk_size_msg() ) {
+                FUNLOG(Info, "rtmp buffer get msg buf, break parse for SET_CHUNK_SIZE, msg.count=%d", m_arrChunks.size());
+                break;
+            }
 
             //in case infinit loop:
             if( count >= 100 ) 
@@ -421,4 +426,12 @@ void    RtmpBuffer::shuffer() {
     }
 }
 
+bool    RtmpBuffer::has_set_chunk_size_msg() {
+    for( auto it=m_arrChunks.begin(); it!=m_arrChunks.end(); it++ ) {
+        RtmpMsgBuffer* msg = *it;
+        if( msg->msg_type() == RTMP_MSG_SET_CHUNK_SIZE ) 
+            return true;
+    }
 
+    return false;
+}

@@ -1,5 +1,6 @@
 #include "session.h"
 #include "connection.h"
+#include "client.h"
 
 #include "common/logger.h"
 
@@ -61,6 +62,47 @@ Consumer*   Session::get_consumer(uint32_t id) {
     return it->second;
 }
 
+Client* Session::add_forwarder(const std::string& url, Client* client) {
+    Client* old = get_forwarder(url);
+    if( old != NULL ) {
+        FUNLOG(Error, "session add forwarder failed, already exist for url=%s", url.c_str());
+        return old;
+    }
+
+    m_mapForwarders[url] = client;
+}
+
+void    Session::remove_forwarder(const std::string& url) {
+    auto it = m_mapForwarders.find(url);
+    if( it == m_mapForwarders.end() ) {
+        FUNLOG(Error, "session get forwarder failed, not exist for url=%s", url.c_str());
+        return;
+    }
+    delete it->second;
+    m_mapForwarders.erase(it);
+}
+
+Client* Session::get_forwarder(const std::string& url) {
+    auto it = m_mapForwarders.find(url);
+    if( it == m_mapForwarders.end() ) {
+        FUNLOG(Error, "session get forwarder failed, not exist for url=%s", url.c_str());
+        return NULL;
+    }
+
+    return it->second;
+}
+
+void    Session::on_meta_data(const char* data, int len) {
+    FUNLOG(Info, "session on meta data, len=%d", len);
+    for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
+        it->second->on_meta_data(data, len);
+    }
+
+    for( auto it=m_mapForwarders.begin(); it!=m_mapForwarders.end(); it++ ) {
+        it->second->on_meta_data(data, len);
+    }
+}
+
 void    Session::on_audio_rtmp(const char* data, int len) {
     for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
         it->second->on_audio_rtmp(data, len);
@@ -75,6 +117,10 @@ void    Session::on_video(VideoFrame* frame) {
 
 void    Session::on_video_rtmp(const char* data, int len) {
     for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
+        it->second->on_video_rtmp(data, len);
+    }
+
+    for( auto it=m_mapForwarders.begin(); it!=m_mapForwarders.end(); it++ ) {
         it->second->on_video_rtmp(data, len);
     }
 }

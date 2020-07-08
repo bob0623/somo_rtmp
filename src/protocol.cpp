@@ -28,3 +28,11 @@ std::string protocol_get_name(int protocol) {
 
     return "";
 }
+
+int protocol_parse_url(const std::string& url) {
+    if( url.find("rtmp://") != -1 )
+        return PROTOCOL_RTMP;
+    else if( url.find("somo://") != -1 ) 
+        return PROTOCOL_SOMO_UDP;
+} 
+

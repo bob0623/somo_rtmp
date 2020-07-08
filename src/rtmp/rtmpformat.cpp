@@ -345,9 +345,15 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
-        buf.write_4bytes(m_header.id);
 
-        total_len += 11;
+        if( fmt == 0 ) {
+            buf.write_4bytes(m_header.id);
+            total_len += 11;
+        } else {
+            total_len += 7;
+        }
+
+        
         header_len_pos += 3;
     } else {
         FUNLOG(Error, "rtmp basic msg get full data, invalid msg type=%d", m_header.type);
@@ -551,8 +557,17 @@ void    RtmpSetPeerBandwidthPacket::set_peer_bandwidth(uint32_t bw) {
 
 
 //onMetaData
-RtmpDataMessagePacket::RtmpDataMessagePacket() {
+RtmpDataMessagePacket::RtmpDataMessagePacket() 
+: m_pBuf(NULL)
+, m_nLen(0)
+{
 
+}
+
+RtmpDataMessagePacket::RtmpDataMessagePacket(const char* data, int len) {
+    FUNLOG(Info, "rtmp data message, meta len=%d", len);
+    memcpy(m_pBuf, data, len);
+    m_nLen = len;
 }
 
 RtmpDataMessagePacket::~RtmpDataMessagePacket() {
@@ -560,6 +575,20 @@ RtmpDataMessagePacket::~RtmpDataMessagePacket() {
 }
 
 void    RtmpDataMessagePacket::decode(IOBuffer* buf) {
+    //backup, because new consumer need this:
+    int pos = buf->pos();
+    int size = buf->left();
+    if( size == 0 )
+        return;
+
+    if( m_pBuf == NULL ) {
+        m_pBuf = new char[size];
+    }
+    buf->read_bytes(m_pBuf, size);
+    m_nLen = size;
+    buf->repos(pos);
+
+    //decode the content:
     std::string strAtName;
     std::string strName;
 
@@ -573,12 +602,60 @@ void    RtmpDataMessagePacket::decode(IOBuffer* buf) {
     m_nFileSize = (uint32_t)array->ensure_property_number("fileSize")->to_number();
     m_nVideoWidth = (uint32_t)array->ensure_property_number("width")->to_number();
     m_nVideoHeight = (uint32_t)array->ensure_property_number("height")->to_number();
+    m_nVideoDataRate = (uint32_t)array->ensure_property_number("videodatarate")->to_number();
+    m_nVideoFps = (uint32_t)array->ensure_property_number("framerate")->to_number();
+
+    m_nAudioDataRate = (uint32_t)array->ensure_property_number("audiodatarate")->to_number();
+    m_nAudioSampleRate = (uint32_t)array->ensure_property_number("audiosamplerate")->to_number();
+    m_nAudioSampleSize = (uint32_t)array->ensure_property_number("audiosamplesize")->to_number();
+    m_nAudioChannels = (uint32_t)array->ensure_property_number("audiochannels")->to_number();
 
     FUNLOG(Info, "rtmp data packet, width=%d, height=%d", m_nVideoWidth, m_nVideoHeight);
 }
    
-int     RtmpDataMessagePacket::encode(IOBuffer* buf) {
-    return 0;
+int     RtmpDataMessagePacket::encode(IOBuffer* buf) {   
+    if( m_pBuf != NULL && m_nLen > 0) {
+        buf->write_bytes(m_pBuf, m_nLen);
+        return m_nLen;
+    } 
+
+    int size = buf->pos();
+    rtmp_amf0_write_string(buf, "@setDataFrame");
+    rtmp_amf0_write_string(buf, "onMetaData");
+    
+    RtmpAmf0EcmaArray* array = RtmpAmf0Any::ecma_array();
+    array->set("duration", RtmpAmf0Any::number(0) );
+    array->set("fileSize", RtmpAmf0Any::number(0) );
+
+    //video
+    array->set("width", RtmpAmf0Any::number(m_nVideoWidth) );
+    array->set("height", RtmpAmf0Any::number(m_nVideoHeight) );
+    array->set("videocodecid", RtmpAmf0Any::str("avc1") );
+    array->set("videodatarate", RtmpAmf0Any::number(m_nVideoDataRate) );
+    array->set("framerate", RtmpAmf0Any::number(m_nVideoFps) );
+
+    //audio
+    array->set("audiocodecid", RtmpAmf0Any::str("mp4a") );
+    array->set("audiodatarate", RtmpAmf0Any::number(m_nAudioDataRate) );
+    array->set("audiosamplerate", RtmpAmf0Any::number(m_nAudioSampleRate) );
+    array->set("audiosamplesize", RtmpAmf0Any::number(m_nAudioSampleSize) );
+    array->set("audiochannels", RtmpAmf0Any::number(m_nAudioChannels) );
+    array->set("stereo", RtmpAmf0Any::boolean( (m_nAudioChannels==2) ) );
+
+    //profiles:
+    array->set("2.1", RtmpAmf0Any::boolean(false) );
+    array->set("3.1", RtmpAmf0Any::boolean(false) );
+    array->set("4.0", RtmpAmf0Any::boolean(false) );
+    array->set("4.1", RtmpAmf0Any::boolean(false) );
+    array->set("5.1", RtmpAmf0Any::boolean(false) );
+    array->set("7.1", RtmpAmf0Any::boolean(false) );
+
+    //encoder:
+    array->set("encoder", RtmpAmf0Any::str("somo_server_mcu(0.0.1") );
+
+    array->write(buf);
+
+    return buf->pos()-size;
 }
 
 
@@ -679,6 +756,23 @@ void    RtmpCommandPacket::decode(IOBuffer* buf) {
         m_pPlayParams->stream = stream;
         m_pPlayParams->start = start;
         m_pPlayParams->duration = duration;
+    }  else if( m_strName == RTMP_AMF0_COMMAND_RESULT ) {
+        double tid = 0;
+
+        rtmp_amf0_read_number(buf, tid);
+        rtmp_amf0_read_null(buf);
+        rtmp_amf0_read_undefined(buf);
+
+        m_pResultParams = new RtmpResultParams();
+        m_pResultParams->tid = (uint32_t)tid;
+    } else if( m_strName == RTMP_AMF0_COMMAND_ON_STATUS ) {
+        double code = 0;
+
+        rtmp_amf0_read_number(buf, code);
+        rtmp_amf0_read_null(buf);
+
+        m_pOnStatusParams = new RtmpOnStatusParams();
+        m_pOnStatusParams->code = (uint32_t)code;
     } else {
         FUNLOG(Info, "rtmp unknown msg, m_strName=%s", m_strName.c_str());
     }
