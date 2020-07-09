@@ -13,7 +13,7 @@ class VideoFrame;
 class RtmpConsumer : public Consumer {
 public:
     RtmpConsumer(RtmpStream* stream, uint32_t id);
-    ~RtmpConsumer();
+    virtual ~RtmpConsumer();
 
 public:
     virtual uint32_t  id();

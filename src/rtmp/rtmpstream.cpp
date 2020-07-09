@@ -31,6 +31,7 @@ RtmpStream::RtmpStream(RtmpConnection* conn)
 , m_nType(RTMP_SESSION_TYPE_UNKNOWN)
 , m_nTid(1)
 , m_nStatus(RTMP_SESSION_STATUS_INIT)
+, m_nPlayTid(0)
 {
     m_nSendBufCapacity = 1024*128;
     m_pSendBuf = new char[ m_nSendBufCapacity];
@@ -66,7 +67,7 @@ void    RtmpStream::on_msg(RtmpMessage* msg) {
         {
             RtmpSetChunkSizePacket* chunk_msg = (RtmpSetChunkSizePacket*)msg->packet();
             m_nChunkSizeIn = chunk_msg->chunk_size();
-            FUNLOG(Info, "rtmp session set chunk size, chunk_size=%d", m_nChunkSizeIn);
+            FUNLOG(Info, "rtmp stream set chunk size, chunk_size=%d", m_nChunkSizeIn);
             m_pConnection->buffer()->set_chunk_size(m_nChunkSizeIn);
         }
         break;
@@ -111,7 +112,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         m_strApp = packet->connect_packet()->app;
         m_strTcUrl = packet->connect_packet()->tcUrl;
 
-        FUNLOG(Info, "rtmp session command connect, app=%s, tcUrl=%s", m_strApp.c_str(), m_strTcUrl.c_str());
+        FUNLOG(Info, "rtmp stream command connect, app=%s, tcUrl=%s", m_strApp.c_str(), m_strTcUrl.c_str());
         ack_window_ack_size(msg->chunk_stream(), 2500000);
         ack_set_peer_bandwidth(msg->chunk_stream(), 2500000);
         ack_chunk_size(msg->chunk_stream(), m_nChunkSizeOut);
@@ -120,24 +121,24 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         m_strStream = packet->release_stream_packet()->stream;
 
         uint32_t tid = packet->release_stream_packet()->tid;
-        FUNLOG(Info, "rtmp session command releaseStream, stream=%s, tid=%d", m_strStream.c_str(), tid);
+        FUNLOG(Info, "rtmp stream command releaseStream, stream=%s, tid=%d", m_strStream.c_str(), tid);
         ack_release_stream(msg->chunk_stream(), tid);
 
     }  else if( packet->name() == "FCPublish" ) {
         m_strStream = packet->fcpublish_packet()->stream;
 
         uint32_t tid = packet->fcpublish_packet()->tid;
-        FUNLOG(Info, "rtmp session command FCPublish, stream=%s, tid=%d", m_strStream.c_str(), tid);
+        FUNLOG(Info, "rtmp stream command FCPublish, stream=%s, tid=%d", m_strStream.c_str(), tid);
         ack_fcpublish(msg->chunk_stream(), tid);
 
     } else if( packet->name() == "createStream" ) {
         uint32_t tid = packet->create_stream_packet()->tid;
-        FUNLOG(Info, "rtmp session command createStream, tid=%d", tid);
+        FUNLOG(Info, "rtmp stream command createStream, tid=%d", tid);
         ack_create_stream(msg->chunk_stream(), tid);
 
     } else if( packet->name() == "publish" ) {
         uint32_t tid = packet->publish_packet()->tid;
-        FUNLOG(Info, "rtmp session command publish, tid=%d, stream=%s, mode=%s, stream_id=%d", tid, packet->publish_packet()->stream.c_str(), packet->publish_packet()->mode.c_str(), msg->stream_id());
+        FUNLOG(Info, "rtmp stream command publish, tid=%d, stream=%s, mode=%s, stream_id=%d", tid, packet->publish_packet()->stream.c_str(), packet->publish_packet()->mode.c_str(), msg->stream_id());
         ack_publish(msg->chunk_stream(), tid, msg->stream_id());
         ack_publish_onstatus(msg->chunk_stream());
 
@@ -153,7 +154,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
 
     } else if( packet->name() == "play" ) {
         uint32_t tid = packet->play_packet()->tid;
-        FUNLOG(Info, "rtmp session command play, stream=%s", packet->play_packet()->stream.c_str());
+        FUNLOG(Info, "rtmp stream command play, stream=%s", packet->play_packet()->stream.c_str());
         ack_stream_begin(msg->chunk_stream());
         ack_play(msg->chunk_stream(), tid);
 
@@ -166,20 +167,23 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
         //3, if stream not exist, create it with App.
         m_pSession = (RtmpSession*)App::Ins()->get_session(packet->play_packet()->stream);
         if( m_pSession == NULL ) {
-            FUNLOG(Error, "rtmp session command play, session not exist for stream=%s", packet->play_packet()->stream.c_str());
+            FUNLOG(Error, "rtmp stream command play, session not exist for stream=%s", packet->play_packet()->stream.c_str());
             return;
         } else {
             m_pSession->add_consumer(m_pConsumer);
         }
     } else if( packet->name() == RTMP_AMF0_COMMAND_RESULT ) {
         //[yunzed] this command only exist when I'm a RTMP client.
-        FUNLOG(Info, "rtmp session command result, status=%d, tid=%d", m_nStatus, packet->result_packet()->tid);
+        FUNLOG(Info, "rtmp stream command result, status=%d, tid=%d", m_nStatus, packet->result_packet()->tid);
         if( !m_pConnection->is_client()) {
-            FUNLOG(Error, "rtmp session command result only exist as client mode, is_client=%s", m_pConnection->is_client()?"yes":"no");
+            FUNLOG(Error, "rtmp stream command result only exist as client mode, is_client=%s", m_pConnection->is_client()?"yes":"no");
             return;
         }
         if( m_pConnection->is_player() ) {
             //in player mode, send "PLAY" command.
+            if( m_nStatus == RTMP_SESSION_STATUS_PLAYING && m_nPlayTid == packet->result_packet()->tid ) {
+                send_play(msg->chunk_stream());
+            }
         } else {
             //othersize, send "FCPublish&publish"
             if( m_nStatus == RTMP_SESSION_STATUS_CONNECTING && m_nConnectTid == packet->result_packet()->tid ) {
@@ -193,7 +197,7 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
             }
         }
     } else if( packet->name() == RTMP_AMF0_COMMAND_ON_STATUS ) {
-        FUNLOG(Info, "rtmp session command onstatus, status=%d, code=%d", m_nStatus, packet->onstatus_packet()->code);
+        FUNLOG(Info, "rtmp stream command onstatus, status=%d, code=%d", m_nStatus, packet->onstatus_packet()->code);
         m_nStatus = RTMP_SESSION_STATUS_READY;
     }
 }
@@ -233,13 +237,13 @@ void    RtmpStream::send_set_chunk_size(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_SET_CHUNK_SIZE, 4);
     RtmpSetChunkSizePacket* packet = (RtmpSetChunkSizePacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session set chunk size, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream set chunk size, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_chunk_size(m_nChunkSizeOut);
 
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session set chunk size, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream set chunk size, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
@@ -248,7 +252,7 @@ void    RtmpStream::send_connect(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session connect, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream connect, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     m_nConnectTid = m_nTid++;
@@ -278,7 +282,7 @@ void    RtmpStream::send_fcpublish(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session fcpublish, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream fcpublish, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
 
@@ -301,7 +305,7 @@ void    RtmpStream::send_publish(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session publish, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream publish, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
 
@@ -322,7 +326,7 @@ void    RtmpStream::send_create_stream(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session create_stream, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream create_stream, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
 
@@ -344,7 +348,7 @@ void    RtmpStream::send_release_stream(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session release_stream, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream release_stream, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
 
@@ -362,18 +366,42 @@ void    RtmpStream::send_release_stream(RtmpChunkStream* chunk_stream) {
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
+void    RtmpStream::send_play(RtmpChunkStream* chunk_stream) {
+    FUNLOG(Info, "rtmp stream send play command! app=%s, stream=%s, tid=%d", m_strApp.c_str(), m_strStream.c_str(), m_nTid);
+    RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
+    RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp stream play, packet==NULL! cid=%d", chunk_stream->cid());
+        return;
+    }
+
+    m_nPlayTid = m_nTid++;
+    m_nStatus = RTMP_SESSION_STATUS_PLAYING;
+
+    packet->set_name("play");
+    packet->add_amf0_object( RtmpAmf0Any::number(m_nPlayTid) );
+    packet->add_amf0_object( RtmpAmf0Any::null());
+    packet->add_amf0_object( RtmpAmf0Any::str(m_strStream.c_str()));
+    packet->add_amf0_object( RtmpAmf0Any::number(-2000) );
+
+    //send the data:
+    memset(m_pSendBuf, 0, m_nSendBufCapacity);
+    int total_len = msg->get_full_data(1, 3, m_pSendBuf, m_nSendBufCapacity);
+    m_pConnection->send(m_pSendBuf, total_len);
+}
+
 void    RtmpStream::ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_WindowAcknowledgementSize, 4);
     RtmpWindowAckSizePacket* packet = (RtmpWindowAckSizePacket*)msg->packet();
 
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session ack window size, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream ack window size, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_window_size(size);
 
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack window size, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream ack window size, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
@@ -382,13 +410,13 @@ void    RtmpStream::ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32
     RtmpSetPeerBandwidthPacket* packet = (RtmpSetPeerBandwidthPacket*)msg->packet();
 
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session ack window size, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream ack window size, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_peer_bandwidth(bandwidth);
 
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack set peer bandwidth, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream ack set peer bandwidth, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
@@ -397,14 +425,14 @@ void    RtmpStream::ack_chunk_size(RtmpChunkStream* chunk_stream, uint32_t chunk
     RtmpSetChunkSizePacket* packet = (RtmpSetChunkSizePacket*)msg->packet();
 
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session set chunk size, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream set chunk size, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_chunk_size(chunk_size);
 
     //send the data:
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack chunk size, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream ack chunk size, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
@@ -412,7 +440,7 @@ void    RtmpStream::ack_connect(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session connect result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream connect result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("_result");
@@ -432,15 +460,16 @@ void    RtmpStream::ack_connect(RtmpChunkStream* chunk_stream) {
 
     //send the data:
     int total_len = msg->get_full_data(0, chunk_stream->cid(), m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack connect, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream ack connect, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
 void    RtmpStream::ack_release_stream(RtmpChunkStream* chunk_stream, uint32_t tid) {
+    FUNLOG(Info, "rtmp stream ack release stream, tid=%d", tid);
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session release stream result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream release stream result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("_result");
@@ -457,7 +486,7 @@ void    RtmpStream::ack_fcpublish(RtmpChunkStream* chunk_stream, uint32_t tid) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session connect result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream connect result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("_result");
@@ -474,7 +503,7 @@ void    RtmpStream::ack_create_stream(RtmpChunkStream* chunk_stream, uint32_t ti
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session connect result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream connect result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("_result");
@@ -493,7 +522,7 @@ void    RtmpStream::ack_publish(RtmpChunkStream* chunk_stream, uint32_t tid, uin
 
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session connect result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream connect result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("onFCPublish");
@@ -515,7 +544,7 @@ void    RtmpStream::ack_publish_onstatus(RtmpChunkStream* chunk_stream) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session connect result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream connect result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("onStatus");
@@ -538,7 +567,7 @@ void    RtmpStream::ack_play(RtmpChunkStream* chunk_stream, uint32_t tid) {
     RtmpMessage* msg = new RtmpMessage(chunk_stream, RTMP_MSG_AMF0CommandMessage);
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session play result, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream play result, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_name("onStatus");
@@ -562,14 +591,14 @@ void    RtmpStream::ack_stream_begin(RtmpChunkStream* chunk_stream) {
     RtmpUserCtlPacket* packet = (RtmpUserCtlPacket*)msg->packet();
 
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session ack ping failed, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream ack ping failed, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_event(RTMP_USER_CTL_STREAM_BEGIN);
     packet->set_data(1);
 
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack stream begin, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream ack stream begin, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }
 
@@ -578,13 +607,13 @@ void    RtmpStream::ack_ping(RtmpChunkStream* chunk_stream, uint32_t data) {
     RtmpUserCtlPacket* packet = (RtmpUserCtlPacket*)msg->packet();
 
     if( packet == NULL ) {
-        FUNLOG(Error, "rtmp session ack ping failed, packet==NULL! cid=%d", chunk_stream->cid());
+        FUNLOG(Error, "rtmp stream ack ping failed, packet==NULL! cid=%d", chunk_stream->cid());
         return;
     }
     packet->set_event(RTMP_USER_CTL_PING_RESPONSE);
     packet->set_data(data);
 
     int total_len = msg->get_full_data(0, 2, m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp session ack ping, total_len=%d", total_len);
+    FUNLOG(Info, "rtmp stream ack ping, total_len=%d", total_len);
     m_pConnection->send(m_pSendBuf, total_len);
 }

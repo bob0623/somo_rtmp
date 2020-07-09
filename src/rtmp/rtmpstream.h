@@ -50,6 +50,7 @@ public:
     void    send_publish(RtmpChunkStream* chunk_stream);
     void    send_create_stream(RtmpChunkStream* chunk_stream);
     void    send_release_stream(RtmpChunkStream* chunk_stream);
+    void    send_play(RtmpChunkStream* chunk_stream);
     
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
     void    ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth);
@@ -92,6 +93,7 @@ private:
     uint32_t        m_nFCPublishTid;
     uint32_t        m_nCreateStreamTid;
     uint32_t        m_nReleaseStreamTid;
+    uint32_t        m_nPlayTid;
 
     //for send buf
     char*           m_pSendBuf;

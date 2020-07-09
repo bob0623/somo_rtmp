@@ -18,6 +18,7 @@ RtmpConnection::RtmpConnection(const std::string& ip, short port, const std::str
 , m_pSHClient(NULL)
 , m_pSHServer(NULL)
 , m_strRtmpPath(path)
+, m_nLastDataStamp(0)
 {
     FUNLOG(Info, "rtmp connection new, ip=%s, port=%d", ip.c_str(), port);
     if( m_bClient ) {
@@ -68,6 +69,8 @@ RtmpConnection::~RtmpConnection() {
 
 int    RtmpConnection::on_data(const char* data, int len) {
     //FUNLOG(Info, "rtmp connection on data, len=%d", len);
+    m_nLastDataStamp = Util::system_time_msec();
+
     if( !m_bShakeHands ) {
         int ret = shake_hands(data, len);
         if( ret == 0 ) {
@@ -104,6 +107,19 @@ void RtmpConnection::clear() {
 
 Session* RtmpConnection::session() {
     return m_pStream->session();
+}
+
+bool RtmpConnection::is_alive() {
+    if( m_bClient ) {
+        return true;
+    }
+
+    //if connection is in server mode, check if no data for 5 seconds
+    if( Util::system_time_msec()-m_nLastDataStamp > 10*1000 && m_nLastDataStamp > 0 ) {
+        return false;
+    }
+
+    return true;
 }
 
 void RtmpConnection::start_shake_hands() {

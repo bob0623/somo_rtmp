@@ -9,7 +9,7 @@ class VideoFrame;
 class RtmpPublisher : public Publisher {
 public:
     RtmpPublisher(RtmpStream* stream);
-    ~RtmpPublisher();
+    virtual ~RtmpPublisher();
 
 public:
     virtual uint32_t  id();

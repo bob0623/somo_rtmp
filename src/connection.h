@@ -26,6 +26,11 @@ public:
      */
     virtual Session*    session() = 0;
 
+    /**
+     * check if the connection is still alive.
+     */
+    virtual bool    is_alive() = 0;
+
 public:
     void    send(const char* data, int len);
     void    close();

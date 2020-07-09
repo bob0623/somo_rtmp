@@ -32,6 +32,25 @@ void    Server::clear() {
     m_mapConnections.clear();
 }
 
+void    Server::check_alive() {
+    std::set<uint32_t> expire_links;
+    for( auto it=m_mapConnections.begin(); it!=m_mapConnections.end(); it++ ) {
+        Connection* conn = it->second;
+        if( !conn ) {
+            continue;
+        }
+
+        if( !conn->is_alive() ) {
+            FUNLOG(Warn, "server check alive, expire connid=%d", conn->linkid());
+            expire_links.insert(it->first);
+        }
+    }
+
+    for( auto it=expire_links.begin(); it!=expire_links.end(); it++ ) {
+        m_mapConnections.erase(*it);
+    }
+}
+
 void    Server::on_connected(ISNLink* link) {
     FUNLOG(Info, "connection open, id=%d", link->linkid());
     Connection* conn = get_connection(link->linkid());
