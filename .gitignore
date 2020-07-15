@@ -1,3 +1,5 @@
 somomcu
 .vscode/
 build/objs/
+log
+*.dSYM
