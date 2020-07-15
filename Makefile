@@ -3,9 +3,14 @@ BASENET_LIB = ../somo_server_netbase/build
 LIB3RD = ./3rd
 
 CC = g++
-INC = -I include -I src -I $(BASENET_INC)
+INC = -I include -I src -I $(BASENET_INC) -I $(LIB3RD)/spdlog/include
+#for centos
 STDLIB = -lz -lrt -lpthread -ldl
-LIB = $(BASENET_LIB)/libnetbase.a $(LIB3RD)/libuv/lib/libuv.a /usr/local/ssl/lib/libcrypto.a
+LIB = $(BASENET_LIB)/libnetbase.a $(LIB3RD)/libuv/lib/libuv.a /usr/local/ssl/lib/libcrypto.a $(LIB3RD)/spdlog/lib/libspdlog.a
+
+#for mac
+#STDLIB = -lz -lcrypto -lpthread -ldl #-lrt
+#LIB = $(BASENET_LIB)/libnetbase.a $(LIB3RD)/libuv/lib/mac/libuv.a $(LIB3RD)/spdlog/lib/mac/libspdlog.a
 
 BUILD_TIME = `date "+%Y-%m-%d_%H:%M:%S"`
 
