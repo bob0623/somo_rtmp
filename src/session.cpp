@@ -65,7 +65,7 @@ Consumer*   Session::get_consumer(uint32_t id) {
 Client* Session::add_forwarder(const std::string& url, Client* client) {
     Client* old = get_forwarder(url);
     if( old != NULL ) {
-        FUNLOG(Error, "session add forwarder failed, already exist for url=%s", url.c_str());
+        FUNLOG(Warn, "session add forwarder failed, already exist for url=%s", url.c_str());
         return old;
     }
 
@@ -75,7 +75,7 @@ Client* Session::add_forwarder(const std::string& url, Client* client) {
 void    Session::remove_forwarder(const std::string& url) {
     auto it = m_mapForwarders.find(url);
     if( it == m_mapForwarders.end() ) {
-        FUNLOG(Error, "session get forwarder failed, not exist for url=%s", url.c_str());
+        FUNLOG(Warn, "session remove forwarder failed, not exist for url=%s", url.c_str());
         return;
     }
     delete it->second;
@@ -85,7 +85,7 @@ void    Session::remove_forwarder(const std::string& url) {
 Client* Session::get_forwarder(const std::string& url) {
     auto it = m_mapForwarders.find(url);
     if( it == m_mapForwarders.end() ) {
-        FUNLOG(Error, "session get forwarder failed, not exist for url=%s", url.c_str());
+        FUNLOG(Warn, "session get forwarder failed, not exist for url=%s", url.c_str());
         return NULL;
     }
 

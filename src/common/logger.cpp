@@ -19,8 +19,8 @@ void init_sys_log()
 {
 #if defined(__APPLE__)
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_level(spdlog::level::warn);
-    console_sink->set_pattern("[somomcu] [%^%l%$] %v");
+    console_sink->set_level(spdlog::level::trace);
+    console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("log/messages", true);
     file_sink->set_level(spdlog::level::trace);
     file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
