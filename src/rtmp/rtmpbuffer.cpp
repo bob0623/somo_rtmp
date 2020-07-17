@@ -187,7 +187,7 @@ void    RtmpBuffer::push(const char* data, int len) {
         //if we got SET_CHUNK_SIZE, break here:
         //if we got SET_CHUNK_SIZE, break here:
             if( has_set_chunk_size_msg() ) {
-                FUNLOG(Info, "rtmp buffer push, break parse for SET_CHUNK_SIZE, msg.count=%d", m_arrChunks.size());
+                FUNLOG(Info, "rtmp buffer push, break parse for SET_CHUNK_SIZE, msg.count=%d", m_arrMsgs.size());
                 break;
             }
 
@@ -200,7 +200,7 @@ void    RtmpBuffer::push(const char* data, int len) {
 }
 
 RtmpMsgBuffer*    RtmpBuffer::get_msg_buf() {
-    if( m_arrChunks.empty() ) {
+    if( m_arrMsgs.empty() ) {
         //parse again, maybe more data:
         int count = 0;
         while( parse() ) {
@@ -208,7 +208,7 @@ RtmpMsgBuffer*    RtmpBuffer::get_msg_buf() {
 
             //if we got SET_CHUNK_SIZE, break here:
             if( has_set_chunk_size_msg() ) {
-                FUNLOG(Info, "rtmp buffer get msg buf, break parse for SET_CHUNK_SIZE, msg.count=%d", m_arrChunks.size());
+                FUNLOG(Info, "rtmp buffer get msg buf, break parse for SET_CHUNK_SIZE, msg.count=%d", m_arrMsgs.size());
                 break;
             }
 
@@ -218,13 +218,13 @@ RtmpMsgBuffer*    RtmpBuffer::get_msg_buf() {
         }
     }
     
-    if( m_arrChunks.empty() )
+    if( m_arrMsgs.empty() )
         return NULL;
 
-    auto it = m_arrChunks.front();
+    auto it = m_arrMsgs.front();
     if( !it->ready() )
         return NULL;
-    m_arrChunks.pop_front();
+    m_arrMsgs.pop_front();
 
     return it;
 }
@@ -340,7 +340,7 @@ bool    RtmpBuffer::parse() {
 
             if( m_pCurMsg->ready() ) {
                 //m_pCurMsg->dump_ready();
-                m_arrChunks.push_back(m_pCurMsg);
+                m_arrMsgs.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             } else {
                 FUNLOG(Warn, "rtmp buffer parse, not ready for cid=%d, msg_len=%d, len=%d", m_pCurMsg->cid(), m_pCurMsg->msg_len(), m_pCurMsg->len());
@@ -372,7 +372,7 @@ bool    RtmpBuffer::parse() {
 
             if( m_pCurMsg->ready() ) {
                 //m_pCurMsg->dump_ready();
-                m_arrChunks.push_back(m_pCurMsg);
+                m_arrMsgs.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             }
 
@@ -405,7 +405,7 @@ bool    RtmpBuffer::parse() {
 
             if( m_pCurMsg->ready() ) {
                 m_pCurMsg->dump_ready();
-                m_arrChunks.push_back(m_pCurMsg);
+                m_arrMsgs.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             }
 
@@ -427,7 +427,7 @@ void    RtmpBuffer::shuffer() {
 }
 
 bool    RtmpBuffer::has_set_chunk_size_msg() {
-    for( auto it=m_arrChunks.begin(); it!=m_arrChunks.end(); it++ ) {
+    for( auto it=m_arrMsgs.begin(); it!=m_arrMsgs.end(); it++ ) {
         RtmpMsgBuffer* msg = *it;
         if( msg->msg_type() == RTMP_MSG_SET_CHUNK_SIZE ) 
             return true;

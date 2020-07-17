@@ -21,7 +21,7 @@ void init_sys_log()
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::trace);
     console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
-    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("log/messages", true);
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("log/messages.log", true);
     file_sink->set_level(spdlog::level::trace);
     file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
     g_logger = spdlog::logger("somomcu", {console_sink, file_sink});

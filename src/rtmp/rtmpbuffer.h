@@ -155,7 +155,7 @@ public:
     int     m_nPos;
     int     m_nLen;
     
-    std::deque<RtmpMsgBuffer*>    m_arrChunks;
+    std::deque<RtmpMsgBuffer*>    m_arrMsgs;
     RtmpMsgBuffer*    m_pCurMsg;
     uint32_t    m_nChunkSize;
     int     m_nLastLen;
