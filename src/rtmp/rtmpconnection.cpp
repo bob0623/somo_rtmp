@@ -19,7 +19,7 @@ RtmpConnection::RtmpConnection(const std::string& ip, short port, const std::str
 , m_pSHServer(NULL)
 , m_strRtmpPath(path)
 {
-    FUNLOG(Info, "rtmp connection new, ip=%s, port=%d", ip.c_str(), port);
+    FUNLOG(Info, "rtmp connection new, ip=%s, port=%d, m_bClient=%d", ip.c_str(), port, m_bClient);
     if( m_bClient ) {
         m_pSHClient = new RtmpShakeHands_Client(this);
     } else {
@@ -41,6 +41,7 @@ RtmpConnection::RtmpConnection(ISNLink* link)
 , m_pSHClient(NULL)
 , m_pSHServer(NULL)
 {
+    FUNLOG(Info, "rtmp server connection new, m_bClient=%d", m_bClient);
     m_nConnectStamp = Util::system_time_msec();
     if( m_bClient ) {
         m_pSHClient = new RtmpShakeHands_Client(this);
@@ -67,14 +68,20 @@ RtmpConnection::~RtmpConnection() {
 }
 
 int    RtmpConnection::on_data(const char* data, int len) {
-    //FUNLOG(Info, "rtmp connection on data, len=%d", len);
+    // FUNLOG(Info, "rtmp connection on data, len=%d", len);
     if( !m_bShakeHands ) {
         int ret = shake_hands(data, len);
         if( ret == 0 ) {
             FUNLOG(Error, "rtmp connect shake hands failed! linkid=%d, len=%d", linkid(), len);
             return 0;
         } else {
-            return ret;
+            if (ret >= len) {
+                return ret;
+            } else {
+                data += ret;
+                len -= ret;
+                FUNLOG(Info, "handle the rest data, handled ret=%d, reset len=%d, continue handle...", ret, len);
+            }
         }
     }
     m_pBuffer->push(data, len);
@@ -107,7 +114,7 @@ Session* RtmpConnection::session() {
 }
 
 void RtmpConnection::start_shake_hands() {
-    FUNLOG(Info, "rtmp connection start client shake hands!", NULL);
+    FUNLOG(Info, "rtmp connection start client shake hands! m_bClient=%d", m_bClient);
     if( m_bClient ) {
         m_pSHClient->start();
     }
@@ -142,6 +149,7 @@ int     RtmpConnection::shake_hands(const char* data, int len) {
 }
 
 void     RtmpConnection::handle_msg(RtmpMsgBuffer* msg_buf) {
+    // FUNLOG(Info, "RtmpConnection, handle_msg, msg_buf->cid()=%d, msg_buf->msg_type()=%d", msg_buf->cid(),msg_buf->msg_type());
     RtmpChunkStream* chunk_stream = get_chunk_stream( msg_buf->cid() );
     if( chunk_stream == NULL ) {
         chunk_stream = new RtmpChunkStream(msg_buf->cid());

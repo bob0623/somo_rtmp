@@ -106,6 +106,7 @@ bool    RtmpStream::is_consumer() {
 
 void    RtmpStream::on_command(RtmpMessage* msg) {
     RtmpCommandPacket* packet = (RtmpCommandPacket*)msg->packet();
+    FUNLOG(Info, "rtmpstream on command: %s", packet->name().c_str());
     if( packet->name() == "connect" ) {
 
         m_strApp = packet->connect_packet()->app;
@@ -225,7 +226,6 @@ void    RtmpStream::on_video(RtmpMessage* msg) {
         m_pPublisher->on_video_rtmp_sh(m_pSendBuf, total_len);
     }
     VideoFramePool::Ins()->free( frame );
-
 }
 
 void    RtmpStream::send_set_chunk_size(RtmpChunkStream* chunk_stream) {

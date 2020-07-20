@@ -10,7 +10,7 @@ int main()
     SNStartup();
     log(LOG_INFO, "SNSStartup over.");
     App::Ins()->add_server( 1935, PROTOCOL_RTMP );
-    // App::Ins()->add_forwarder("rtmp://rtmp1.video.somo.tech/video/2000U10000051");
+    // App::Ins()->add_forwarder("rtmp://rtmp1.video.somo.tech/video/200U201");
     log(LOG_INFO, "SNLoop enter.");
     SNLoop();
     log(0, "SNLoop exit");

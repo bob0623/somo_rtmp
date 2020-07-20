@@ -74,6 +74,7 @@ void    RtmpMsgBuffer::dump_ready() {
 
 int     RtmpMsgBuffer::fmt() {
     if( m_arrChunks.size() == 0 ) {
+        FUNLOG(Warn, "invalid fmt == 0", NULL);
         return 0;
     }
 
@@ -83,6 +84,7 @@ int     RtmpMsgBuffer::fmt() {
 
 int     RtmpMsgBuffer::cid() {
     if( m_arrChunks.size() == 0 ) {
+        FUNLOG(Warn, "invalid cid == 0", NULL);
         return 0;
     }
 
@@ -91,6 +93,7 @@ int     RtmpMsgBuffer::cid() {
 
 int     RtmpMsgBuffer::msg_len() {
     if( m_arrChunks.size() == 0 ) {
+        FUNLOG(Warn, "invalid msg_len == 0", NULL);
         return 0;
     }
 
@@ -99,6 +102,7 @@ int     RtmpMsgBuffer::msg_len() {
 
 int     RtmpMsgBuffer::msg_type() {
     if( m_arrChunks.size() == 0 ) {
+        FUNLOG(Warn, "invalid msg_type == 0", NULL);
         return 0;
     }
 
@@ -313,6 +317,7 @@ bool    RtmpBuffer::parse() {
     if( stamp == 0xFFFFFF ) {
         stamp_ext = buf.read_4bytes();
         chunk_header_len += 4;
+        FUNLOG(Warn, "rtmp buffer parse, stamp == 0xFFFFFF, contain an ext stamp, stamp_ext=%u", stamp_ext);
     }
 
     //FUNLOG(Info, "rtmp buffer parse, fmt=%d, cid=%d, header.size=%d, b1=0x%x, chunk.header.len=%d, msg_len=%d, msg_type=%d, total_len=%d", fmt, cid, basic_header_len, b1, chunk_header_len, msg_len, msg_type, len);
@@ -343,7 +348,7 @@ bool    RtmpBuffer::parse() {
                 m_arrMsgs.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             } else {
-                FUNLOG(Warn, "rtmp buffer parse, not ready for cid=%d, msg_len=%d, len=%d", m_pCurMsg->cid(), m_pCurMsg->msg_len(), m_pCurMsg->len());
+                // FUNLOG(Warn, "rtmp buffer parse, not ready for cid=%d, msg_len=%d, len=%d", m_pCurMsg->cid(), m_pCurMsg->msg_len(), m_pCurMsg->len());
             }
 
             m_nLen -= chunk_total_len;
@@ -404,7 +409,7 @@ bool    RtmpBuffer::parse() {
             m_pCurMsg->add_chunk(chunk_buf);
 
             if( m_pCurMsg->ready() ) {
-                m_pCurMsg->dump_ready();
+                // m_pCurMsg->dump_ready();
                 m_arrMsgs.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             }

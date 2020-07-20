@@ -49,9 +49,11 @@ void    App::add_server(short port, int proto) {
 
 void    App::add_server(short port, Protocol* protocol) {
     FUNLOG(Info, "app add protocol, port=%d, protocol=%d, name=%s", port, protocol->protocol(), protocol->name().c_str());
-    Server* server = protocol->create_server();
-    server->listen(port);
-
+    Server* server = get_server(port);
+    if (server == NULL) {
+        server = protocol->create_server();
+        server->listen(port);
+    }
     m_mapServers[port] = server;
 }
 
@@ -88,6 +90,7 @@ Session*    App::add_session(const std::string& stream, Protocol* protocol) {
     Session* session = get_session(stream);
     if( session == NULL ) {
         session = protocol->create_session(stream);
+        FUNLOG(Info,"app add session=%p, stream=%s", session, stream.c_str());
         m_mapSessions[stream] = session;
     }
 
