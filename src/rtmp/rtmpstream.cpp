@@ -219,6 +219,7 @@ void    RtmpStream::on_video(RtmpMessage* msg) {
         return;
     }
 
+    //call on_video_rtmp for performance, no need to transfer rtmp to video tag and audio tag.
     int total_len = msg->get_full_data(1, msg->chunk_stream()->cid(), m_pSendBuf, m_nSendBufCapacity);
     m_pPublisher->on_video_rtmp( m_pSendBuf, total_len );
 

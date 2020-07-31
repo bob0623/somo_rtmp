@@ -22,6 +22,8 @@ std::string protocol_get_name(int protocol) {
         break;
     case PROTOCOL_RTMP:
         return "rtmp";
+    case PROTOCOL_RTP:
+        return "rtp";
     default:
         break;
     }
@@ -34,5 +36,7 @@ int protocol_parse_url(const std::string& url) {
         return PROTOCOL_RTMP;
     else if( url.find("somo://") != -1 ) 
         return PROTOCOL_SOMO_UDP;
+    else if( url.find("rtp://") != -1 )
+        return PROTOCOL_RTP;
 } 
 

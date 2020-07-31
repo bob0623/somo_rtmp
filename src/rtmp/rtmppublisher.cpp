@@ -83,7 +83,7 @@ void    RtmpPublisher::on_audio_rtmp(const char* data, int len) {
     m_nAudioFrames++;
 
     if( m_nAudioFrames%1000 == 0 || m_nAudioFrames <= 5) {
-        FUNLOG(Info, "rtmp publisher on audio frame, frames=%d, size=%d,", m_nAudioFrames, len);
+        FUNLOG(Info, "rtmp publisher on audio rtmp, frames=%d, size=%d,", m_nAudioFrames, len);
     }
     m_pStream->session()->on_audio_rtmp(data, len);
 }
@@ -100,7 +100,7 @@ void    RtmpPublisher::on_video_rtmp(const char* data, int len) {
     m_nVideoFrames++;
 
     if( m_nVideoFrames%300 == 0 || m_nVideoFrames <= 5) {
-        FUNLOG(Info, "rtmp publisher on video frame, frames=%d, size=%d,", m_nVideoFrames, len);
+        FUNLOG(Info, "rtmp publisher on video rtmp, frames=%d, size=%d,", m_nVideoFrames, len);
     }
     m_pStream->session()->on_video_rtmp(data, len);
 }
