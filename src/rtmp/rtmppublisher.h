@@ -13,8 +13,9 @@ public:
 
 public:
     virtual uint32_t  id();
+    virtual std::string stream();
+    
     virtual void    on_new_consumer(Consumer* consumer);
-
     virtual void    on_meta_data(const char* data, int len);
 
     virtual void    on_audio(AudioFrame* frame);

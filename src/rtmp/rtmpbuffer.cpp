@@ -69,7 +69,7 @@ void    RtmpMsgBuffer::add_chunk(RtmpChunkBuffer* chunk_buf) {
 }
 
 void    RtmpMsgBuffer::dump_ready() {
-    FUNLOG(Info, "rtmp msg buffer ready! cid=%d, msg_len=%d, msg_type=%d", cid(), msg_len(), msg_type());
+    //FUNLOG(Info, "rtmp msg buffer ready! cid=%d, msg_len=%d, msg_type=%d", cid(), msg_len(), msg_type());
 }
 
 int     RtmpMsgBuffer::fmt() {
@@ -343,7 +343,7 @@ bool    RtmpBuffer::parse() {
                 m_arrChunks.push_back(m_pCurMsg);
                 m_pCurMsg = NULL;
             } else {
-                FUNLOG(Warn, "rtmp buffer parse, not ready for cid=%d, msg_len=%d, len=%d", m_pCurMsg->cid(), m_pCurMsg->msg_len(), m_pCurMsg->len());
+                //FUNLOG(Warn, "rtmp buffer parse, not ready for cid=%d, msg_len=%d, len=%d", m_pCurMsg->cid(), m_pCurMsg->msg_len(), m_pCurMsg->len());
             }
 
             m_nLen -= chunk_total_len;

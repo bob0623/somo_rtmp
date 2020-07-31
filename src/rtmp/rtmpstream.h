@@ -42,6 +42,7 @@ public:
     RtmpPublisher*  publisher() { return m_pPublisher; }
     RtmpConsumer*   consumer() { return m_pConsumer; }
     uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
+    std::string stream() { return m_strStream; }
 
 public:
     void    send_set_chunk_size(RtmpChunkStream* chunk_stream);

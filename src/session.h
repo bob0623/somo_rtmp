@@ -15,6 +15,8 @@ class AudioFrame;
 class Publisher {
 public:
     virtual uint32_t  id() = 0;
+
+    virtual std::string stream() = 0;
     /**
      * callback when new consumer comes. this is useful when new consumer coming in and then publisher can send some data to init.
      */

@@ -21,6 +21,7 @@ void    Session::set_publisher(Publisher* publisher) {
 }
 
 void    Session::remove_publisher() {
+    FUNLOG(Info, "session remove publisher, stream=%s", m_pPublisher->stream().c_str() );
     if( m_pPublisher ) {
         delete m_pPublisher;
         m_pPublisher = NULL;
@@ -43,6 +44,7 @@ void    Session::add_consumer(Consumer* consumer) {
 }
 
 void    Session::remove_consumer(uint32_t id) {
+    FUNLOG(Info, "session remove consumer, id=%d", id);
     Consumer* consumer = get_consumer(id);
     if( consumer == NULL ) {
         FUNLOG(Error, "session remove consumer failed! not exist for id=%d", id);

@@ -30,5 +30,7 @@ public:
 private:
     uint32_t    m_nId;
     RtmpStream* m_pStream;
+    uint64_t    m_nVideoPackets;
+    uint64_t    m_nAudioPackets;
 };
 
