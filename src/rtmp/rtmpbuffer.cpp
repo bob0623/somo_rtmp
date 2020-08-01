@@ -232,6 +232,7 @@ RtmpMsgBuffer*    RtmpBuffer::get_msg_buf() {
 void    RtmpBuffer::clear() {
     m_nPos = 0;
     m_nLen = 0;
+    m_nChunkSize = 128;
 }
 
 bool    RtmpBuffer::parse() {

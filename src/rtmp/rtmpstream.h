@@ -99,6 +99,8 @@ private:
     uint32_t        m_nReleaseStreamTid;
     uint32_t        m_nPlayTid;
 
+    bool            m_bRecvMeta;
+
     //for send buf
     char*           m_pSendBuf;
     int             m_nSendBufCapacity;

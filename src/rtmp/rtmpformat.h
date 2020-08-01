@@ -101,7 +101,10 @@ struct RtmpResultParams {
 };
 
 struct RtmpOnStatusParams {
-    uint32_t        code;
+    uint32_t        value;
+    std::string     level;
+    std::string     code;
+    std::string     description;
 };
 
 struct RtmpMetaParams {

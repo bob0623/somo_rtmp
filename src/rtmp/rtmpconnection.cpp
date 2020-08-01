@@ -108,6 +108,7 @@ void RtmpConnection::clear() {
     if( m_pSHServer != NULL ) {
         m_pSHServer->clear();
     }
+    m_pBuffer->clear();
 }
 
 Session* RtmpConnection::session() {

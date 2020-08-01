@@ -32,6 +32,7 @@ RtmpStream::RtmpStream(RtmpConnection* conn)
 , m_nTid(1)
 , m_nStatus(RTMP_SESSION_STATUS_INIT)
 , m_nPlayTid(0)
+, m_bRecvMeta(false)
 {
     m_nSendBufCapacity = 1024*128;
     m_pSendBuf = new char[ m_nSendBufCapacity];
@@ -95,6 +96,8 @@ void    RtmpStream::clear() {
     m_nType = RTMP_SESSION_TYPE_UNKNOWN;
     m_nTid = 1;
     m_nStatus = RTMP_SESSION_STATUS_INIT;
+    m_bRecvMeta = false;
+    m_nChunkSizeIn = 128;
 }
 
 bool    RtmpStream::is_publisher() {
@@ -197,7 +200,8 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
             }
         }
     } else if( packet->name() == RTMP_AMF0_COMMAND_ON_STATUS ) {
-        FUNLOG(Info, "rtmp stream command onstatus, status=%d, code=%d", m_nStatus, packet->onstatus_packet()->code);
+        FUNLOG(Info, "rtmp stream command onstatus, status=%d, value=%d, level=%s, code=%s, description=%s", 
+            m_nStatus, packet->onstatus_packet()->value, packet->onstatus_packet()->level.c_str(), packet->onstatus_packet()->code.c_str(), packet->onstatus_packet()->description.c_str() );
         m_nStatus = RTMP_SESSION_STATUS_READY;
     }
 }
@@ -209,6 +213,8 @@ void    RtmpStream::on_meta_data(RtmpMessage* msg) {
         return;
     }
     m_meta = *packet->params();
+    m_bRecvMeta = true;
+    
     FUNLOG(Info, "rtmp stream on meta data, app=%s, stream=%s, video_width=%d, video_height=%d, video_bitrate=%d, video_fps=%d", 
         m_strApp.c_str(), m_strStream.c_str(), m_meta.video_width, m_meta.video_height, m_meta.video_data_rate, m_meta.video_fps);
 

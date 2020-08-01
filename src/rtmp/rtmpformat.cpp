@@ -768,13 +768,19 @@ void    RtmpCommandPacket::decode(IOBuffer* buf) {
         m_pResultParams = new RtmpResultParams();
         m_pResultParams->tid = (uint32_t)tid;
     } else if( m_strName == RTMP_AMF0_COMMAND_ON_STATUS ) {
-        double code = 0;
+        double value = 0;
 
-        rtmp_amf0_read_number(buf, code);
+        rtmp_amf0_read_number(buf, value);
         rtmp_amf0_read_null(buf);
 
+        RtmpAmf0Object* props = RtmpAmf0Any::object();
+        props->read(buf);
+
         m_pOnStatusParams = new RtmpOnStatusParams();
-        m_pOnStatusParams->code = (uint32_t)code;
+        m_pOnStatusParams->value = (uint32_t)value;
+        m_pOnStatusParams->level = get_amf_prop(props, "level");
+        m_pOnStatusParams->code = get_amf_prop(props, "code");
+        m_pOnStatusParams->description = get_amf_prop(props, "description");
     } else {
         FUNLOG(Info, "rtmp unknown msg, m_strName=%s", m_strName.c_str());
     }
