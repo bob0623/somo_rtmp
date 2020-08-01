@@ -3,6 +3,7 @@
 #include "rtmpshakehands.h"
 #include "rtmpstream.h"
 #include "rtmpformat.h"
+#include "protocol.h"
 
 #include "common/util.h"
 #include "common/logger.h"
@@ -48,4 +49,15 @@ void    RtmpClient::on_video_rtmp(const char* data, int len) {\
 
 void    RtmpClient::on_video_rtmp_sh(const char* data, int len) {
     connection()->send(data, len);
+}
+
+RtmpForwarder::RtmpForwarder(const std::string& url)
+: RtmpClient( protocol_get_rtmp() , url, false)
+{
+
+}
+    
+RtmpForwarder::~RtmpForwarder()
+{
+    
 }

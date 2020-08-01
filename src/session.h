@@ -4,11 +4,14 @@
 #include <stdint.h>
 #include <string>
 #include <map>
+#include <vector>
 
+class Stream;
 class Consumer;
 class Publisher;
 class Session;
 class Client;
+class Filter;
 
 class VideoFrame;
 class AudioFrame;
@@ -48,6 +51,9 @@ public:
      * rtmp_sh data need to be send to all "new consumer"
      */
     virtual void    on_video_rtmp_sh(const char* data, int len) = 0;
+
+    virtual ~Publisher() {}
+
 };
 
 class Consumer {
@@ -59,6 +65,7 @@ public:
     virtual void    on_video(VideoFrame* frame) = 0;
     virtual void    on_video_rtmp(const char* data, int len) = 0;
     virtual void    on_video_rtmp_sh(const char* data, int len) = 0;
+    virtual ~Consumer() {}
 };
 
 class Session {
@@ -77,7 +84,9 @@ public:
     void    remove_forwarder(const std::string& url);
     Client* get_forwarder(const std::string& url);
 
-public:
+    void    add_filter(Filter* filter);
+
+    std::string stream() { return m_strStream; }
     Publisher*  publisher() { return m_pPublisher; }
 
 public:
@@ -88,14 +97,13 @@ public:
     void    on_video(VideoFrame* frame);
     void    on_video_rtmp(const char* data, int len);
 
-public:
-    std::string    stream() { return m_strStream; }
-
 private:
     std::string m_strStream;
     Publisher*  m_pPublisher;
     std::map<uint32_t, Consumer*>   m_mapConsumers;
     std::map<std::string, Client*>  m_mapForwarders;
+    std::vector<Filter*>    m_arrFilters;
 };
+
 
 

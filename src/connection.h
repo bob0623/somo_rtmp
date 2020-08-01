@@ -3,6 +3,13 @@
 #include <isnet.h>
 #include <string>
 
+/**
+ * Connection is the base object wrap ISNLink.
+ * 
+ * The most important function is on_data, RtmpConnection and RtpConnection should implement this to handle protocol data.
+ * 
+ */
+
 class Session;
 class Connection {
 public:

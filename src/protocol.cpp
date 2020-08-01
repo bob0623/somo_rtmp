@@ -1,5 +1,7 @@
 #include "protocol.h"
 #include "rtmp/rtmpconnection.h"
+#include "rtmpprotocol.h"
+#include "rtpprotocol.h"
 
 Protocol::Protocol(int protocol, const std::string& name) 
 : m_nProtocol(protocol)
@@ -40,3 +42,14 @@ int protocol_parse_url(const std::string& url) {
         return PROTOCOL_RTP;
 } 
 
+Protocol*   protocol_get_rtmp() {
+    return new RtmpProtocol();
+}
+
+Protocol*   protocol_get_rtp() {
+    return new RtpProtocol();
+}
+
+Protocol*   protocol_get_somo() {
+    return NULL;
+}

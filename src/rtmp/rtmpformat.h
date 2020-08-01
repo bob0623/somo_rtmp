@@ -104,6 +104,23 @@ struct RtmpOnStatusParams {
     uint32_t        code;
 };
 
+struct RtmpMetaParams {
+    uint32_t    duration;
+    uint32_t    filesize;
+    uint32_t    video_width;
+    uint32_t    video_height;
+    uint32_t    video_codec;
+    uint32_t    video_data_rate;
+    uint32_t    video_fps;
+    uint32_t    audio_codec;
+    uint32_t    audio_data_rate;
+    uint32_t    audio_sample_rate;
+    uint32_t    audio_sample_size;
+    uint32_t    audio_channels;
+    bool        stereo;
+    std::string encoder;
+};
+
 class IOBuffer;
 class RtmpMessage;
 class RtmpCommandMsg;
@@ -318,26 +335,12 @@ public:
     virtual int     encode(IOBuffer* buf);
 
 public:
-
+    RtmpMetaParams* params() { return m_pMetaData; }
 
 private:
     char*       m_pBuf;
     int         m_nLen;
-
-    uint32_t    m_nDuration;
-    uint32_t    m_nFileSize;
-    uint32_t    m_nVideoWidth;
-    uint32_t    m_nVideoHeight;
-    uint32_t    m_nVideoCodec;
-    uint32_t    m_nVideoDataRate;
-    uint32_t    m_nVideoFps;
-    uint32_t    m_nAudioCodec;
-    uint32_t    m_nAudioDataRate;
-    uint32_t    m_nAudioSampleRate;
-    uint32_t    m_nAudioSampleSize;
-    uint32_t    m_nAudioChannels;
-    bool        m_bStereo;
-    std::string m_strEncoder;
+    RtmpMetaParams* m_pMetaData;
 };
 
 class RtmpCommandPacket : public RtmpPacket {

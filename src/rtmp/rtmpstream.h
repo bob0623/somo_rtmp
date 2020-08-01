@@ -52,6 +52,7 @@ public:
     void    send_create_stream(RtmpChunkStream* chunk_stream);
     void    send_release_stream(RtmpChunkStream* chunk_stream);
     void    send_play(RtmpChunkStream* chunk_stream);
+    void    send_meta_data(RtmpChunkStream* chunk_stream);
     
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
     void    ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth);

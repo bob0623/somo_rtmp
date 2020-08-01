@@ -30,3 +30,11 @@ protected:
     uint32_t        m_nVideoFrames;
 };
 
+class RtmpForwarder : public RtmpClient {
+public:
+    RtmpForwarder(const std::string& url);
+    ~RtmpForwarder();
+};
+
+
+

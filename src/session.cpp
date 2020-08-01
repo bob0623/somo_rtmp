@@ -94,6 +94,10 @@ Client* Session::get_forwarder(const std::string& url) {
     return it->second;
 }
 
+void    Session::add_filter(Filter* filter) {
+    m_arrFilters.push_back(filter);
+}
+
 void    Session::on_meta_data(const char* data, int len) {
     FUNLOG(Info, "session on meta data, len=%d", len);
     for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {

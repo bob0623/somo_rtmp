@@ -10,7 +10,7 @@ class Connection;
 class Server : public ISNLinkHandler {
 public:
     Server(Protocol* protocol);
-    ~Server();
+    virtual ~Server();
 
 public:
     bool    listen(uint16_t port);

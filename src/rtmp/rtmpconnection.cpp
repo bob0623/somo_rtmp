@@ -65,6 +65,11 @@ RtmpConnection::~RtmpConnection() {
     }
     delete m_pStream;
     delete m_pBuffer;
+
+    for( auto it=m_mapStreams.begin(); it!=m_mapStreams.end(); it++ ) {
+        delete it->second;
+    }
+    m_mapStreams.clear();
 }
 
 int    RtmpConnection::on_data(const char* data, int len) {
