@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rtmpformat.h"
 #include <string>
 
 #define RTMP_SESSION_TYPE_UNKNOWN       0
@@ -87,6 +88,7 @@ private:
     std::string     m_strStream;
     uint32_t        m_nChunkSizeIn;
     uint32_t        m_nChunkSizeOut;
+    RtmpMetaParams  m_meta;
 
     //runtime:
     uint32_t        m_nStatus;

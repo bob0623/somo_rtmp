@@ -203,8 +203,16 @@ void    RtmpStream::on_command(RtmpMessage* msg) {
 }
 
 void    RtmpStream::on_meta_data(RtmpMessage* msg) {
+    RtmpDataMessagePacket* packet = (RtmpDataMessagePacket*)msg->packet();
+    if( packet == NULL ) {
+        FUNLOG(Error, "rtmp stream on meta data, packet==NULL!!! app=%s, stream=%s", m_strApp.c_str(), m_strStream.c_str());
+        return;
+    }
+    m_meta = *packet->params();
+    FUNLOG(Info, "rtmp stream on meta data, app=%s, stream=%s, video_width=%d, video_height=%d, video_bitrate=%d, video_fps=%d", 
+        m_strApp.c_str(), m_strStream.c_str(), m_meta.video_width, m_meta.video_height, m_meta.video_data_rate, m_meta.video_fps);
+
     int total_len = msg->get_full_data(1, msg->chunk_stream()->cid(), m_pSendBuf, m_nSendBufCapacity);
-    FUNLOG(Info, "rtmp stream on meta, total_len=%d", total_len);
     m_pPublisher->on_meta_data( m_pSendBuf, total_len );
 }
 
