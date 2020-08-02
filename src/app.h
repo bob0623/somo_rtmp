@@ -6,6 +6,7 @@
 
 #define PROTOCOL_SOMO_UDP       1
 #define PROTOCOL_RTMP           2
+#define PROTOCOL_RTP            3
 
 /**
  * Session belongs to a Server, but Sessions can talk cross Server. Ex: packets from rtmp Session can be forward to rtmp Session.

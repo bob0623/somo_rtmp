@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rtmpformat.h"
 #include <string>
 
 #define RTMP_SESSION_TYPE_UNKNOWN       0
@@ -42,6 +43,7 @@ public:
     RtmpPublisher*  publisher() { return m_pPublisher; }
     RtmpConsumer*   consumer() { return m_pConsumer; }
     uint32_t    in_chunk_size() { return m_nChunkSizeIn; }
+    std::string stream() { return m_strStream; }
 
 public:
     void    send_set_chunk_size(RtmpChunkStream* chunk_stream);
@@ -50,6 +52,8 @@ public:
     void    send_publish(RtmpChunkStream* chunk_stream);
     void    send_create_stream(RtmpChunkStream* chunk_stream);
     void    send_release_stream(RtmpChunkStream* chunk_stream);
+    void    send_play(RtmpChunkStream* chunk_stream);
+    void    send_meta_data(RtmpChunkStream* chunk_stream);
     
     void    ack_window_ack_size(RtmpChunkStream* chunk_stream, uint32_t size);
     void    ack_set_peer_bandwidth(RtmpChunkStream* chunk_stream, uint32_t bandwidth);
@@ -84,6 +88,7 @@ private:
     std::string     m_strStream;
     uint32_t        m_nChunkSizeIn;
     uint32_t        m_nChunkSizeOut;
+    RtmpMetaParams  m_meta;
 
     //runtime:
     uint32_t        m_nStatus;
@@ -92,6 +97,9 @@ private:
     uint32_t        m_nFCPublishTid;
     uint32_t        m_nCreateStreamTid;
     uint32_t        m_nReleaseStreamTid;
+    uint32_t        m_nPlayTid;
+
+    bool            m_bRecvMeta;
 
     //for send buf
     char*           m_pSendBuf;

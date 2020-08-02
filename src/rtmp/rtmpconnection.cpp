@@ -18,8 +18,9 @@ RtmpConnection::RtmpConnection(const std::string& ip, short port, const std::str
 , m_pSHClient(NULL)
 , m_pSHServer(NULL)
 , m_strRtmpPath(path)
+, m_nLastDataStamp(0)
 {
-    FUNLOG(Info, "rtmp connection new, ip=%s, port=%d, m_bClient=%d", ip.c_str(), port, m_bClient);
+    FUNLOG(Info, "rtmp connection new, ip=%s, port=%d, m_bClient=%d, this=%p", ip.c_str(), port, m_bClient, this);
     if( m_bClient ) {
         m_pSHClient = new RtmpShakeHands_Client(this);
     } else {
@@ -41,7 +42,7 @@ RtmpConnection::RtmpConnection(ISNLink* link)
 , m_pSHClient(NULL)
 , m_pSHServer(NULL)
 {
-    FUNLOG(Info, "rtmp server connection new, m_bClient=%d", m_bClient);
+    FUNLOG(Info, "rtmp server connection new, m_bClient=%d, this=%p", m_bClient, this);
     m_nConnectStamp = Util::system_time_msec();
     if( m_bClient ) {
         m_pSHClient = new RtmpShakeHands_Client(this);
@@ -57,20 +58,32 @@ RtmpConnection::RtmpConnection(ISNLink* link)
 }
 
 RtmpConnection::~RtmpConnection() {
+    FUNLOG(Info, "dealloc RtmpConnection.", NULL);
     if( m_pSHClient ) {
         delete m_pSHClient;
     }
     if( m_pSHServer ) {
         delete m_pSHServer;
     }
+     FUNLOG(Info, "dealloc RtmpConnection111.", NULL);
     delete m_pStream;
+    FUNLOG(Info, "delete m_pBuffer.", NULL);
     delete m_pBuffer;
+    FUNLOG(Info, "dealloc RtmpConnection222.", NULL);
+
+    for( auto it=m_mapStreams.begin(); it!=m_mapStreams.end(); it++ ) {
+        delete it->second;
+    }
+    m_mapStreams.clear();
+    FUNLOG(Info, "dealloc RtmpConnection complete.", NULL);
 }
 
 int    RtmpConnection::on_data(const char* data, int len) {
     // FUNLOG(Info, "rtmp connection on data, len=%d", len);
+    m_nLastDataStamp = Util::system_time_msec();
+    int ret = 0;
     if( !m_bShakeHands ) {
-        int ret = shake_hands(data, len);
+        ret += shake_hands(data, len);
         if( ret == 0 ) {
             FUNLOG(Error, "rtmp connect shake hands failed! linkid=%d, len=%d", linkid(), len);
             return 0;
@@ -85,7 +98,7 @@ int    RtmpConnection::on_data(const char* data, int len) {
         }
     }
     m_pBuffer->push(data, len);
-
+    ret += len;
     while( true ) {
         RtmpMsgBuffer* msg_buf = m_pBuffer->get_msg_buf();
         if( msg_buf != NULL ) {
@@ -94,8 +107,8 @@ int    RtmpConnection::on_data(const char* data, int len) {
             break;
         }
     }
-
-    return len;
+    // FUNLOG(Info, "RtmpConnection on_data, return consumed data len=%d", ret);
+    return ret;
 }
 
 void RtmpConnection::clear() {
@@ -107,10 +120,24 @@ void RtmpConnection::clear() {
     if( m_pSHServer != NULL ) {
         m_pSHServer->clear();
     }
+    m_pBuffer->clear();
 }
 
 Session* RtmpConnection::session() {
     return m_pStream->session();
+}
+
+bool RtmpConnection::is_alive() {
+    if( m_bClient ) {
+        return true;
+    }
+
+    //if connection is in server mode, check if no data for 5 seconds
+    if( Util::system_time_msec()-m_nLastDataStamp > 10*1000 && m_nLastDataStamp > 0 ) {
+        return false;
+    }
+
+    return true;
 }
 
 void RtmpConnection::start_shake_hands() {
@@ -139,7 +166,7 @@ int     RtmpConnection::shake_hands(const char* data, int len) {
         ret = m_pSHServer->on_data(data, len);
         m_bShakeHands = m_pSHServer->done();
         if( m_bShakeHands ) {
-            FUNLOG(Info, "rtmp connection server shake hands done! linkid=%d", linkid());
+            FUNLOG(Info, "rtmp connection server shake hands done! linkid=%d， ret=%d", linkid(), ret);
         }
     }
     if( ret == 0 )

@@ -34,8 +34,9 @@ int  RtmpShakeHands_Server::on_data(const char* data, int len) {
             m_bReadC0C1 = true;
             read_c0c1(data, len);
             create_s0s1s2();
+            FUNLOG(Info, "try to send S2.", NULL);
             m_pRtmpConn->send(m_pS0S1S2, 3073);
-
+            FUNLOG(Info, "try to send S2 over.", NULL);
             return 1537;
         } else {
             FUNLOG(Error, "rtmp shake hands server, C0&C1 lens!=1537, len=%d", len);

@@ -10,20 +10,31 @@ class Client : public ISNLinkHandler {
 public:
     /**
      * A client must be specified as player or not.
-     * For Rtmp, player means send PLAY command, otherwise send FCPublish&publish command to server.
-     * 
+     * For Rtmp, player send PLAY command, otherwise send FCPublish&publish command to server.
      */
     Client(Protocol* protocol, const std::string& url, bool player);
-    ~Client();
+
+    virtual ~Client();
 
 public:
     virtual void on_connected(ISNLink* pLink);
     virtual void on_close(ISNLink* pLink);
     virtual int  on_data(const char* data, size_t len, ISNLink* pLink);
 
-    virtual void    on_meta_data(const char* data, int len) = 0;
-    virtual void    on_video_rtmp(const char* data, int len) = 0;
-    virtual void    on_video_rtmp_sh(const char* data, int len) = 0;
+    /**
+     * handle meta data, for RTMP it's rtmp data command.
+     */
+    virtual void on_meta_data(const char* data, int len) = 0;
+    
+    /**
+     * handle rtmp video tag.
+     */
+    virtual void on_video_rtmp(const char* data, int len) = 0;
+    
+    /**
+     * handle rtmp video sequence header.
+     */
+    virtual void on_video_rtmp_sh(const char* data, int len) = 0;
 
 public:
     Connection*     connection() { return m_pConnection; }

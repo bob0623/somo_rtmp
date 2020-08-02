@@ -8,6 +8,7 @@
 
 Session::Session(const std::string& stream) 
 : m_strStream(stream)
+, m_pPublisher(NULL)
 {
 
 }
@@ -21,10 +22,13 @@ void    Session::set_publisher(Publisher* publisher) {
 }
 
 void    Session::remove_publisher() {
-    if( m_pPublisher ) {
-        delete m_pPublisher;
-        m_pPublisher = NULL;
-    }
+    FUNLOG(Info, "session remove publisher, stream=%s", m_pPublisher->stream().c_str() );
+    // if( m_pPublisher ) {
+    //     delete m_pPublisher;
+    //     m_pPublisher = NULL;
+    // }
+    m_pPublisher = NULL;
+    FUNLOG(Info, "session remove publisher over.", NULL);
 }
 
 void    Session::add_consumer(Consumer* consumer) {
@@ -39,10 +43,15 @@ void    Session::add_consumer(Consumer* consumer) {
     //maybe need to send some config data to new consumer:
     //Ex: RTMP Sequence header need to be sent to new consumer.
     //
-    m_pPublisher->on_new_consumer(consumer);
+    if (m_pPublisher) {
+        m_pPublisher->on_new_consumer(consumer);
+    } else {
+        FUNLOG(Error, "m_pPublisher == NULL", NULL);
+    }
 }
 
 void    Session::remove_consumer(uint32_t id) {
+    FUNLOG(Info, "session remove consumer, id=%d", id);
     Consumer* consumer = get_consumer(id);
     if( consumer == NULL ) {
         FUNLOG(Error, "session remove consumer failed! not exist for id=%d", id);
@@ -90,6 +99,10 @@ Client* Session::get_forwarder(const std::string& url) {
     }
 
     return it->second;
+}
+
+void    Session::add_filter(Filter* filter) {
+    m_arrFilters.push_back(filter);
 }
 
 void    Session::on_meta_data(const char* data, int len) {

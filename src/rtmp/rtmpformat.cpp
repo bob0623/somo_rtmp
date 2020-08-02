@@ -561,17 +561,19 @@ RtmpDataMessagePacket::RtmpDataMessagePacket()
 : m_pBuf(NULL)
 , m_nLen(0)
 {
-
+    m_pMetaData = new RtmpMetaParams();
 }
 
 RtmpDataMessagePacket::RtmpDataMessagePacket(const char* data, int len) {
     FUNLOG(Info, "rtmp data message, meta len=%d", len);
     memcpy(m_pBuf, data, len);
     m_nLen = len;
+
+    m_pMetaData = new RtmpMetaParams();
 }
 
 RtmpDataMessagePacket::~RtmpDataMessagePacket() {
-
+    delete m_pMetaData;
 }
 
 void    RtmpDataMessagePacket::decode(IOBuffer* buf) {
@@ -598,19 +600,19 @@ void    RtmpDataMessagePacket::decode(IOBuffer* buf) {
     RtmpAmf0EcmaArray* array = RtmpAmf0Any::ecma_array();
     array->read(buf);
 
-    m_nDuration = (uint32_t)array->ensure_property_number("duration")->to_number();
-    m_nFileSize = (uint32_t)array->ensure_property_number("fileSize")->to_number();
-    m_nVideoWidth = (uint32_t)array->ensure_property_number("width")->to_number();
-    m_nVideoHeight = (uint32_t)array->ensure_property_number("height")->to_number();
-    m_nVideoDataRate = (uint32_t)array->ensure_property_number("videodatarate")->to_number();
-    m_nVideoFps = (uint32_t)array->ensure_property_number("framerate")->to_number();
+    m_pMetaData->duration = (uint32_t)array->ensure_property_number("duration")->to_number();
+    m_pMetaData->filesize = (uint32_t)array->ensure_property_number("fileSize")->to_number();
+    m_pMetaData->video_width = (uint32_t)array->ensure_property_number("width")->to_number();
+    m_pMetaData->video_height = (uint32_t)array->ensure_property_number("height")->to_number();
+    m_pMetaData->video_data_rate = (uint32_t)array->ensure_property_number("videodatarate")->to_number();
+    m_pMetaData->video_fps = (uint32_t)array->ensure_property_number("framerate")->to_number();
 
-    m_nAudioDataRate = (uint32_t)array->ensure_property_number("audiodatarate")->to_number();
-    m_nAudioSampleRate = (uint32_t)array->ensure_property_number("audiosamplerate")->to_number();
-    m_nAudioSampleSize = (uint32_t)array->ensure_property_number("audiosamplesize")->to_number();
-    m_nAudioChannels = (uint32_t)array->ensure_property_number("audiochannels")->to_number();
+    m_pMetaData->audio_data_rate = (uint32_t)array->ensure_property_number("audiodatarate")->to_number();
+    m_pMetaData->audio_sample_rate = (uint32_t)array->ensure_property_number("audiosamplerate")->to_number();
+    m_pMetaData->audio_sample_size = (uint32_t)array->ensure_property_number("audiosamplesize")->to_number();
+    m_pMetaData->audio_channels = (uint32_t)array->ensure_property_number("audiochannels")->to_number();
 
-    FUNLOG(Info, "rtmp data packet, width=%d, height=%d", m_nVideoWidth, m_nVideoHeight);
+    FUNLOG(Info, "rtmp data packet, width=%d, height=%d", m_pMetaData->video_width, m_pMetaData->video_height);
 }
    
 int     RtmpDataMessagePacket::encode(IOBuffer* buf) {   
@@ -628,19 +630,19 @@ int     RtmpDataMessagePacket::encode(IOBuffer* buf) {
     array->set("fileSize", RtmpAmf0Any::number(0) );
 
     //video
-    array->set("width", RtmpAmf0Any::number(m_nVideoWidth) );
-    array->set("height", RtmpAmf0Any::number(m_nVideoHeight) );
+    array->set("width", RtmpAmf0Any::number(m_pMetaData->video_width) );
+    array->set("height", RtmpAmf0Any::number(m_pMetaData->video_height) );
     array->set("videocodecid", RtmpAmf0Any::str("avc1") );
-    array->set("videodatarate", RtmpAmf0Any::number(m_nVideoDataRate) );
-    array->set("framerate", RtmpAmf0Any::number(m_nVideoFps) );
+    array->set("videodatarate", RtmpAmf0Any::number(m_pMetaData->video_data_rate) );
+    array->set("framerate", RtmpAmf0Any::number(m_pMetaData->video_fps) );
 
     //audio
     array->set("audiocodecid", RtmpAmf0Any::str("mp4a") );
-    array->set("audiodatarate", RtmpAmf0Any::number(m_nAudioDataRate) );
-    array->set("audiosamplerate", RtmpAmf0Any::number(m_nAudioSampleRate) );
-    array->set("audiosamplesize", RtmpAmf0Any::number(m_nAudioSampleSize) );
-    array->set("audiochannels", RtmpAmf0Any::number(m_nAudioChannels) );
-    array->set("stereo", RtmpAmf0Any::boolean( (m_nAudioChannels==2) ) );
+    array->set("audiodatarate", RtmpAmf0Any::number(m_pMetaData->audio_data_rate) );
+    array->set("audiosamplerate", RtmpAmf0Any::number(m_pMetaData->audio_sample_rate) );
+    array->set("audiosamplesize", RtmpAmf0Any::number(m_pMetaData->audio_sample_size) );
+    array->set("audiochannels", RtmpAmf0Any::number(m_pMetaData->audio_channels) );
+    array->set("stereo", RtmpAmf0Any::boolean( (m_pMetaData->audio_channels==2) ) );
 
     //profiles:
     array->set("2.1", RtmpAmf0Any::boolean(false) );
@@ -766,13 +768,19 @@ void    RtmpCommandPacket::decode(IOBuffer* buf) {
         m_pResultParams = new RtmpResultParams();
         m_pResultParams->tid = (uint32_t)tid;
     } else if( m_strName == RTMP_AMF0_COMMAND_ON_STATUS ) {
-        double code = 0;
+        double value = 0;
 
-        rtmp_amf0_read_number(buf, code);
+        rtmp_amf0_read_number(buf, value);
         rtmp_amf0_read_null(buf);
 
+        RtmpAmf0Object* props = RtmpAmf0Any::object();
+        props->read(buf);
+
         m_pOnStatusParams = new RtmpOnStatusParams();
-        m_pOnStatusParams->code = (uint32_t)code;
+        m_pOnStatusParams->value = (uint32_t)value;
+        m_pOnStatusParams->level = get_amf_prop(props, "level");
+        m_pOnStatusParams->code = get_amf_prop(props, "code");
+        m_pOnStatusParams->description = get_amf_prop(props, "description");
     } else {
         FUNLOG(Info, "rtmp unknown msg, m_strName=%s", m_strName.c_str());
     }

@@ -5,7 +5,7 @@
 #include <map>
 
 /**
- * That's the map, a connection map to a RtmpStream. A Stream is either a RtmpPubsher or RtmpConsumer.
+ * A connection map to a RtmpStream. A Stream is either a RtmpPubsher or RtmpConsumer.
  * 
  * RtmpConnection->Connection->ISNLink
  * RtmpConnection->RtmpStream->RtmpPublisher/RtmpConsumer
@@ -24,12 +24,13 @@ class RtmpConnection : public Connection {
 public:
     RtmpConnection(const std::string& ip, short port, const std::string& path, bool player, ISNLinkHandler* handler);
     RtmpConnection(ISNLink* link);
-    ~RtmpConnection();
+    virtual ~RtmpConnection();
 
 public:
     virtual int on_data(const char* data, int len);
     virtual void clear();
     virtual Session* session();
+    virtual bool is_alive();
 
 public:
     RtmpStream* stream() { return m_pStream; }
@@ -56,6 +57,7 @@ private:
     RtmpBuffer* m_pBuffer;
     //client only, the app&stream info.
     std::string m_strRtmpPath;
+    uint64_t    m_nLastDataStamp;
 };
 
 
