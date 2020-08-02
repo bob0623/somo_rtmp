@@ -76,7 +76,7 @@ void    Server::on_close(ISNLink* link) {
         return;
     }
     connection = it->second;
-    FUNLOG(Info, "session = %p", connection->session());
+    // FUNLOG(Info, "session = %p", connection->session());
     session = connection->session();
     if (session == NULL) {
         FUNLOG(Warn, "session == NULL, exit.", NULL);
@@ -92,7 +92,7 @@ void    Server::on_close(ISNLink* link) {
     } else {
         session->remove_consumer(link->linkid());
     }
-    FUNLOG(Info, "delete connection, connection=%p", connection);
+    // FUNLOG(Info, "delete connection, connection=%p", connection);
     //delete the Connection:
     delete connection;
     m_mapConnections.erase(it);

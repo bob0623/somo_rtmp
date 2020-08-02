@@ -65,11 +65,8 @@ RtmpConnection::~RtmpConnection() {
     if( m_pSHServer ) {
         delete m_pSHServer;
     }
-     FUNLOG(Info, "dealloc RtmpConnection111.", NULL);
     delete m_pStream;
-    FUNLOG(Info, "delete m_pBuffer.", NULL);
     delete m_pBuffer;
-    FUNLOG(Info, "dealloc RtmpConnection222.", NULL);
 
     for( auto it=m_mapStreams.begin(); it!=m_mapStreams.end(); it++ ) {
         delete it->second;
