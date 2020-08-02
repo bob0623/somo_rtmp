@@ -3,6 +3,7 @@
 #include "session.h"
 #include "protocol.h"
 #include "rtmpprotocol.h"
+#include "rtpprotocol.h"
 
 #include "common/logger.h"
 #include "common/util.h"
@@ -11,6 +12,7 @@
 
 App::App() {
     add_protocol(PROTOCOL_RTMP);
+    add_protocol(PROTOCOL_RTP);
 }
 
 App::~App() {
@@ -27,6 +29,8 @@ void    App::add_protocol(int proto) {
 
     if( proto == PROTOCOL_RTMP ) {
         m_mapProtocols[proto] = new RtmpProtocol();
+    } else if( proto == PROTOCOL_RTP ) {
+        m_mapProtocols[proto] = new RtpProtocol();
     }
 }
 

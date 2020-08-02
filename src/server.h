@@ -2,17 +2,20 @@
 
 #include "isnet.h"
 #include <stdint.h>
+#include <map>
+#include <set>
 
 class Protocol;
 class Connection;
 class Server : public ISNLinkHandler {
 public:
     Server(Protocol* protocol);
-    ~Server();
+    virtual ~Server();
 
 public:
     bool    listen(uint16_t port);
     void    clear();
+    void    check_alive();
 
 public:
     virtual void on_connected(ISNLink* pLink);
@@ -22,7 +25,7 @@ public:
 public:
     Connection* get_connection(uint32_t linkid);
 
-private:
+protected:
     Protocol*       m_pProtocol;
     ISNTcpServer*   m_pListener;
     std::map<uint32_t, Connection*> m_mapConnections;

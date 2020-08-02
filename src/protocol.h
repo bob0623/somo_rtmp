@@ -33,3 +33,6 @@ private:
 
 std::string     protocol_get_name(int protcol);
 int protocol_parse_url(const std::string& url);
+Protocol*   protocol_get_rtmp();
+Protocol*   protocol_get_rtp();
+Protocol*   protocol_get_somo();

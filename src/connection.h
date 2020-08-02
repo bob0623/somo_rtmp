@@ -3,6 +3,13 @@
 #include <isnet.h>
 #include <string>
 
+/**
+ * Connection is the base object wrap ISNLink.
+ * 
+ * The most important function is on_data, RtmpConnection and RtpConnection should implement this to handle protocol data.
+ * 
+ */
+
 class Session;
 class Connection {
 public:
@@ -25,6 +32,11 @@ public:
      * return RtmpSession for RTMP protocol
      */
     virtual Session*    session() = 0;
+
+    /**
+     * check if the connection is still alive.
+     */
+    virtual bool    is_alive() = 0;
 
 public:
     void    send(const char* data, int len);

@@ -23,6 +23,9 @@ Connection::~Connection() {
 }
 
 void    Connection::send(const char* data, int len) {
+    if( m_pLink == NULL ) {
+        return;
+    }
     m_pLink->send(data, len);
 }
 
