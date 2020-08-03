@@ -9,8 +9,9 @@
 Session::Session(const std::string& stream) 
 : m_strStream(stream)
 , m_pPublisher(NULL)
+, m_nFrameTick(0)
 {
-
+    FUNLOG(Info, "session construct, this=%p", this);
 }
 
 Session::~Session() {
@@ -72,12 +73,13 @@ Consumer*   Session::get_consumer(uint32_t id) {
 }
 
 Client* Session::add_forwarder(const std::string& url, Client* client) {
+    FUNLOG(Info, "session add_forwarder, url =%s, client=%p", url.c_str(), client);
     Client* old = get_forwarder(url);
     if( old != NULL ) {
         FUNLOG(Warn, "session add forwarder failed, already exist for url=%s", url.c_str());
         return old;
     }
-
+    FUNLOG(Info, "session add_forwarder complete, url =%s, client=%p", url.c_str(), client);
     m_mapForwarders[url] = client;
 }
 
@@ -87,6 +89,7 @@ void    Session::remove_forwarder(const std::string& url) {
         FUNLOG(Warn, "session remove forwarder failed, not exist for url=%s", url.c_str());
         return;
     }
+    FUNLOG(Info, "session remove_forwarder, url=%s", url.c_str());
     delete it->second;
     m_mapForwarders.erase(it);
 }
@@ -129,6 +132,9 @@ void    Session::on_video(VideoFrame* frame) {
 }
 
 void    Session::on_video_rtmp(const char* data, int len) {
+    if (m_nFrameTick++ < 3 || m_nFrameTick % 300 == 0) {
+        FUNLOG(Info, "session on_video_rtmp, m_mapConsumers.size=%d, m_mapForwarders.size=%d， this=%p", m_mapConsumers.size(), m_mapForwarders.size(),this);
+    }
     for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
         it->second->on_video_rtmp(data, len);
     }

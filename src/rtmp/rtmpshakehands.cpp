@@ -170,7 +170,7 @@ int  RtmpShakeHands_Client::on_data(const char* data, int len) {
         m_pRtmpConn->send(m_pC2, 1537);
         return 3073;
     } else {
-        FUNLOG(Error, "rtmp shake hands client, C0&C1 lens!=1537, len=%d", len);
+        FUNLOG(Error, "rtmp shake hands client, S0S1S2 lens!=3073, len=%d", len);
         return 0;
     }
 }

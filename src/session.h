@@ -103,6 +103,7 @@ private:
     std::map<uint32_t, Consumer*>   m_mapConsumers;
     std::map<std::string, Client*>  m_mapForwarders;
     std::vector<Filter*>    m_arrFilters;
+    uint32_t m_nFrameTick;
 };
 
 
