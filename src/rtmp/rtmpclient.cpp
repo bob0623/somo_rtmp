@@ -40,7 +40,7 @@ void    RtmpClient::on_meta_data(const char* data, int len) {
     // connection()->send(data, len);
 }
 
-void    RtmpClient::on_video_rtmp(const char* data, int len) {\
+void    RtmpClient::on_video_rtmp(const char* data, int len) {
     m_nVideoFrames++;
     if( m_nVideoFrames%300 == 0 || m_nVideoFrames<=5 ) {
         FUNLOG(Info, "rtmp client on video rtmp, len=%d, frames=%d", len, m_nVideoFrames);
