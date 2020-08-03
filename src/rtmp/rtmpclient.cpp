@@ -37,7 +37,7 @@ void RtmpClient::on_close(ISNLink* pLink) {
 }
 
 void    RtmpClient::on_meta_data(const char* data, int len) {
-    connection()->send(data, len);
+    // connection()->send(data, len);
 }
 
 void    RtmpClient::on_video_rtmp(const char* data, int len) {\
