@@ -104,4 +104,7 @@ private:
     //for send buf
     char*           m_pSendBuf;
     int             m_nSendBufCapacity;
+
+    char*           m_pSendAudioBuf;
+    int             m_nSendAudioBufCapacity;
 };

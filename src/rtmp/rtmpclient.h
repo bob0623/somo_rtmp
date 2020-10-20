@@ -23,7 +23,8 @@ public:
     virtual void    on_meta_data(const char* data, int len);
     virtual void    on_video_rtmp(const char* data, int len);
     virtual void    on_video_rtmp_sh(const char* data, int len);
-
+    virtual void    on_audio_rtmp(const char* data, int len);
+    virtual void    on_audio_rtmp_sh(const char* data, int len);
 protected:
     std::string     m_strApp;
     std::string     m_strStream;

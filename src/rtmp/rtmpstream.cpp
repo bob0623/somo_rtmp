@@ -230,6 +230,9 @@ void    RtmpStream::on_audio(RtmpMessage* msg) {
     if( m_nType != RTMP_SESSION_TYPE_PUBLISH ) {
         return;
     }
+    int total_len = msg->get_full_data(1, msg->chunk_stream()->cid(), m_pSendBuf, m_nSendBufCapacity);
+    FUNLOG(Info, "rtmp stream, on_audio data total_len=%d", total_len);
+    m_pPublisher->on_audio_rtmp(m_pSendBuf, total_len);
 }
 
 void    RtmpStream::on_video(RtmpMessage* msg) {

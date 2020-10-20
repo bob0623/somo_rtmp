@@ -22,7 +22,7 @@ RtmpChunkStream::~RtmpChunkStream() {
 }
 
 void    RtmpChunkStream::create_msg(uint32_t fmt, uint32_t type, uint32_t len, uint32_t stamp, uint32_t id) {
-    //FUNLOG(Info, "rtmp chunk stream create msg, fmt=%d, type=%d, len=%d, stamp=%d, id=%d", fmt, type, len, stamp, id);
+    FUNLOG(Info, "rtmp chunk stream create msg, fmt=%d, type=%d, len=%d, stamp=%d, id=%d", fmt, type, len, stamp, id);
     if( m_pMsg != NULL ) {
         //msg still valid, something wrong!
         FUNLOG(Error, "rtmp chunk stream create msg, msg!=NULL, fmt=%d, type=%d, len=%d", fmt, type, len);
@@ -319,9 +319,9 @@ int     RtmpMessage::get_full_data(int fmt, int cid, char* data, int len) {
         buf.write_3bytes(m_header.stamp);
         buf.write_3bytes(m_header.len);
         buf.write_1bytes(m_header.type);
-        buf.write_4bytes(m_header.id);
+        // buf.write_4bytes(m_header.id);
 
-        total_len += 11;
+        total_len += 7;
         header_len_pos += 3;
 
     }  else if( m_header.type == RTMP_MSG_VIDEO ) {

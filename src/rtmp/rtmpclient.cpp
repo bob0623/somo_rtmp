@@ -52,6 +52,16 @@ void    RtmpClient::on_video_rtmp_sh(const char* data, int len) {
     connection()->send(data, len);
 }
 
+void    RtmpClient::on_audio_rtmp(const char* data, int len)
+{
+    connection()->send(data, len);
+}
+
+void    RtmpClient::on_audio_rtmp_sh(const char* data, int len)
+{
+    connection()->send(data, len);
+}
+
 RtmpForwarder::RtmpForwarder(const std::string& url)
 : RtmpClient( protocol_get_rtmp() , url, false)
 {

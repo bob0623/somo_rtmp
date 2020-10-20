@@ -36,6 +36,16 @@ public:
      */
     virtual void on_video_rtmp_sh(const char* data, int len) = 0;
 
+        /**
+     * handle rtmp audio tag.
+     */
+    virtual void on_audio_rtmp(const char* data, int len) = 0;
+    
+    /**
+     * handle rtmp audio sequence header.
+     */
+    virtual void on_audio_rtmp_sh(const char* data, int len) = 0;
+
 public:
     Connection*     connection() { return m_pConnection; }
     std::string     url() { return m_strUrl; }

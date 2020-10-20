@@ -123,6 +123,10 @@ void    Session::on_audio_rtmp(const char* data, int len) {
     for( auto it=m_mapConsumers.begin(); it!=m_mapConsumers.end(); it++ ) {
         it->second->on_audio_rtmp(data, len);
     }
+    for (auto it = m_mapForwarders.begin(); it != m_mapForwarders.end(); it++)
+    {
+        it->second->on_audio_rtmp(data, len);
+    }
 }
 
 void    Session::on_video(VideoFrame* frame) {

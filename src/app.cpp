@@ -143,6 +143,7 @@ Client* App::add_forwarder(const std::string& url) {
         return NULL;
     }
 
+    //yudegui:for forwarder test.
     std::string stream = "100U101";//Util::get_url_rtmp_stream(url);
     if( stream.empty() ) {
         FUNLOG(Error, "app add forwarder failed, stream==empty, url=%s", url.c_str());
