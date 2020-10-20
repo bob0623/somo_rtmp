@@ -1,5 +1,5 @@
-# somo_server_mcu
-MCU server for multimedia projects like video meeting or live broadcast. Purpose to support RTMP, RTP, webrtc and private protocols.
+# somo_rtmp
+rtmp server for multimedia projects like video meeting or live broadcast. Purpose to support RTMP, RTP, webrtc and private protocols.
 
 # main feature
 * Full feature RTMP server;
